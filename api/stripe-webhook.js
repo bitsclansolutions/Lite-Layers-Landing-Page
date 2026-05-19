@@ -31,12 +31,19 @@ async function syncSubscription(sub) {
   const uid = sub.metadata?.firebaseUID;
   if (!uid) return;
   const priceId = sub.items.data[0]?.price.id;
-  const plan    = PLAN_BY_PRICE[priceId] || 'free';
+
+  // Only grant paid access when Stripe confirms the subscription is live.
+  // 'incomplete' means the user opened checkout but payment hasn't succeeded yet.
+  const hasAccess = ['active', 'trialing', 'past_due'].includes(sub.status);
+  const plan = hasAccess ? (PLAN_BY_PRICE[priceId] || 'free') : 'free';
+
   await db.collection('users').doc(uid).update({
     plan,
     stripeSubscriptionId: sub.id,
     subscriptionStatus:   sub.status,
-    currentPeriodEnd:     Timestamp.fromMillis(sub.current_period_end * 1000),
+    currentPeriodEnd:     sub.current_period_end
+      ? Timestamp.fromMillis(sub.current_period_end * 1000)
+      : null,
   });
 }
 
