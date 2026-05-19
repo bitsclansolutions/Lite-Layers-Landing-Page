@@ -34,17 +34,20 @@ export default async function handler(req, res) {
     await userRef.update({ stripeCustomerId: customerId });
   }
 
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    payment_method_types: ['card'],
-    line_items: [{ price: PRICE_IDS[plan], quantity: 1 }],
-    success_url: `${process.env.APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `${process.env.APP_URL}/pricing`,
-    subscription_data: {
-      metadata: { firebaseUID: userId, plan },
-    },
-  });
-
-  res.status(200).json({ url: session.url });
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{ price: PRICE_IDS[plan], quantity: 1 }],
+      success_url: `${process.env.APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `${process.env.APP_URL}/pricing`,
+      subscription_data: {
+        metadata: { firebaseUID: userId, plan },
+      },
+    });
+    res.status(200).json({ url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }

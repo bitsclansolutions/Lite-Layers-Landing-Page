@@ -8,10 +8,13 @@ export default async function handler(req, res) {
   const { customerId } = req.body;
   if (!customerId) return res.status(400).json({ error: 'Missing customerId' });
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: customerId,
-    return_url: `${process.env.APP_URL}/dashboard`,
-  });
-
-  res.status(200).json({ url: session.url });
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${process.env.APP_URL}/dashboard`,
+    });
+    res.status(200).json({ url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
