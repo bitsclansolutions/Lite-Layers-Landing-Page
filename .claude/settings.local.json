@@ -25,7 +25,8 @@
       "Bash(findstr /i firebase)",
       "Bash(git branch *)",
       "Bash(git stash *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git config *)"
     ]
   }
 }
