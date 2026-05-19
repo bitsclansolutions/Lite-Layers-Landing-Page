@@ -3,7 +3,9 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 if (!getApps().length) {
-  initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
+  const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!sa) throw new Error('FIREBASE_SERVICE_ACCOUNT env var is not set');
+  initializeApp({ credential: cert(JSON.parse(sa)) });
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
