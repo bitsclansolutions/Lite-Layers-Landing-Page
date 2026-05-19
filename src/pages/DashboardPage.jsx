@@ -420,11 +420,11 @@ function BillingView({ t, userData, user }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: p.id, userId: user.uid, userEmail: user.email }),
       });
-      if (!res.ok) throw new Error('Server error');
-      const { url } = await res.json();
-      window.location.href = url;
-    } catch {
-      setError('Unable to start checkout. Please try again.');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+      window.location.href = data.url;
+    } catch (err) {
+      setError(err.message || 'Unable to start checkout. Please try again.');
       setLoadingPlan(null);
     }
   };
