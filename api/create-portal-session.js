@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   try {
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: `${process.env.APP_URL}/dashboard`,
+      return_url: `${process.env.APP_URL}/dashboard?tab=billing`,
     });
     res.status(200).json({ url: session.url });
   } catch (err) {

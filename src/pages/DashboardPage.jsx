@@ -213,8 +213,9 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
   const limits = LIMITS[plan];
   const PlanIcon = meta.icon;
   const status = userData?.subscriptionStatus;
-  const cancelAtPeriodEnd = userData?.cancelAtPeriodEnd ?? false;
-  const statusStyle = cancelAtPeriodEnd && status === 'active'
+  const cancelAtPeriodEnd = (userData?.cancelAtPeriodEnd ?? false)
+    && status === 'active' && plan !== 'free';
+  const statusStyle = cancelAtPeriodEnd
     ? { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' }
     : STATUS_COLORS[status] || null;
   const periodEnd = userData?.currentPeriodEnd?.seconds
@@ -445,11 +446,14 @@ function BillingView({ t, userData, user }) {
   const meta             = PLAN_META[plan];
   const PlanIcon         = meta.icon;
   const status           = userData?.subscriptionStatus;
-  const cancelAtPeriodEnd = userData?.cancelAtPeriodEnd ?? false;
+  // Only treat as cancelling if subscription is genuinely active — guards against
+  // stale cancelAtPeriodEnd in Firestore when the subscription is already deleted.
+  const cancelAtPeriodEnd = (userData?.cancelAtPeriodEnd ?? false)
+    && status === 'active' && plan !== 'free';
   const periodEnd        = userData?.currentPeriodEnd?.seconds
     ? new Date(userData.currentPeriodEnd.seconds * 1000).toLocaleDateString()
     : null;
-  const statusStyle = cancelAtPeriodEnd && status === 'active'
+  const statusStyle = cancelAtPeriodEnd
     ? { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' }
     : STATUS_COLORS[status] || null;
 
