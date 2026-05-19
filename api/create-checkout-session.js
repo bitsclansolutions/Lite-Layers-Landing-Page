@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       payment_method_types: ['card'],
       line_items: [{ price: PRICE_IDS[plan], quantity: 1 }],
       success_url: `${process.env.APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url:  `${process.env.APP_URL}/pricing`,
+      cancel_url:  `${process.env.APP_URL}/dashboard?tab=billing`,
       subscription_data: {
         metadata: { firebaseUID: userId, plan },
       },

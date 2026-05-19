@@ -8,7 +8,7 @@ export default function PaymentSuccessPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const id = setTimeout(() => navigate('/dashboard', { replace: true }), 4000);
+    const id = setTimeout(() => navigate('/dashboard?tab=billing', { replace: true }), 4000);
     return () => clearTimeout(id);
   }, [navigate]);
 

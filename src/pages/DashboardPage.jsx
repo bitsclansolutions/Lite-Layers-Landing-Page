@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, BarChart2, CreditCard, Settings,
   LogOut, Crown, Zap, RefreshCw, Download, ChevronRight,
@@ -1077,15 +1078,26 @@ function DashboardHeader({ t, active, isDark, toggle }) {
 }
 
 /* ─── main ───────────────────────────────────────────────── */
+const VALID_TABS = ['overview', 'usage', 'billing', 'settings'];
+
 export default function DashboardPage() {
   const { t, isDark, toggle } = useT();
   const { user, userData, signOut } = useAuth();
-  const [active, setActive]         = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [active, setActiveState]        = useState(() => {
+    const tab = searchParams.get('tab');
+    return VALID_TABS.includes(tab) ? tab : 'overview';
+  });
   const [usage, setUsage]           = useState(null);
   const [monthlyData, setMonthly]   = useState([]);
   const [collapsed, setCollapsed]   = useState(false);
   const [loadingUsage, setLoadingUsage] = useState(false);
   const [usageError, setUsageError]     = useState('');
+
+  const setActive = (tab) => {
+    setActiveState(tab);
+    setSearchParams(tab === 'overview' ? {} : { tab });
+  };
 
   const fetchUsage = async (uid) => {
     setLoadingUsage(true);
