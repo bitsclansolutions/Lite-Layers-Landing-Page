@@ -26,11 +26,22 @@ const PLAN_META = {
 };
 
 const STATUS_COLORS = {
-  active:   { bg: 'rgba(34,197,94,0.15)',   text: '#4ade80' },
-  trialing: { bg: 'rgba(59,130,246,0.15)',  text: '#60a5fa' },
-  past_due: { bg: 'rgba(239,68,68,0.15)',   text: '#f87171' },
-  canceled: { bg: 'rgba(100,116,139,0.15)', text: '#94a3b8' },
+  active:             { bg: 'rgba(34,197,94,0.15)',   text: '#4ade80' },
+  trialing:           { bg: 'rgba(59,130,246,0.15)',  text: '#60a5fa' },
+  past_due:           { bg: 'rgba(239,68,68,0.15)',   text: '#f87171' },
+  canceled:           { bg: 'rgba(100,116,139,0.15)', text: '#94a3b8' },
+  incomplete:         { bg: 'rgba(251,191,36,0.15)',  text: '#fbbf24' },
+  incomplete_expired: { bg: 'rgba(100,116,139,0.15)', text: '#94a3b8' },
 };
+
+function statusLabel(status, cancelAtPeriodEnd) {
+  if (cancelAtPeriodEnd && status === 'active') return 'Cancelling';
+  const map = {
+    active: 'Active', trialing: 'Trialing', past_due: 'Past Due',
+    canceled: 'Canceled', incomplete: 'Pending', incomplete_expired: 'Expired',
+  };
+  return map[status] || status;
+}
 
 const NAV = [
   { id: 'overview',  label: 'Overview',    icon: LayoutDashboard },
@@ -202,7 +213,13 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
   const limits = LIMITS[plan];
   const PlanIcon = meta.icon;
   const status = userData?.subscriptionStatus;
-  const statusStyle = STATUS_COLORS[status] || null;
+  const cancelAtPeriodEnd = userData?.cancelAtPeriodEnd ?? false;
+  const statusStyle = cancelAtPeriodEnd && status === 'active'
+    ? { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' }
+    : STATUS_COLORS[status] || null;
+  const periodEnd = userData?.currentPeriodEnd?.seconds
+    ? new Date(userData.currentPeriodEnd.seconds * 1000).toLocaleDateString()
+    : null;
 
   const quickStats = [
     { icon: BarChart2, label: 'BG Removals',  key: 'bgRemovals'      },
@@ -244,8 +261,8 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
             {statusStyle && (
               <div style={{
                 padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                background: statusStyle.bg, color: statusStyle.text, textTransform: 'capitalize',
-              }}>{status?.replace('_', ' ')}</div>
+                background: statusStyle.bg, color: statusStyle.text,
+              }}>{statusLabel(status, cancelAtPeriodEnd)}</div>
             )}
           </div>
           <button
@@ -259,6 +276,28 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
             {plan === 'free' ? 'Upgrade' : 'Manage'} <ChevronRight size={14} />
           </button>
         </div>
+
+        {/* Cancellation scheduled notice */}
+        {cancelAtPeriodEnd && periodEnd && (
+          <div style={{
+            marginTop: 16, padding: '10px 14px', borderRadius: 10,
+            background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.25)',
+            fontSize: 13, color: '#fbbf24',
+          }}>
+            Your {meta.label} plan is cancelled and will end on <strong>{periodEnd}</strong>. You'll move to Free after that.
+          </div>
+        )}
+
+        {/* Past due notice */}
+        {status === 'past_due' && (
+          <div style={{
+            marginTop: 16, padding: '10px 14px', borderRadius: 10,
+            background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
+            fontSize: 13, color: '#f87171',
+          }}>
+            Your last payment failed. Go to <strong style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => onNavigate('billing')}>Billing</strong> to fix your payment method.
+          </div>
+        )}
       </div>
 
       {/* Quick usage grid */}
@@ -402,14 +441,17 @@ function BillingView({ t, userData, user }) {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState('');
 
-  const plan = userData?.plan || 'free';
-  const meta = PLAN_META[plan];
-  const PlanIcon = meta.icon;
-  const status = userData?.subscriptionStatus;
-  const statusStyle = STATUS_COLORS[status] || null;
-  const periodEnd = userData?.currentPeriodEnd?.seconds
+  const plan             = userData?.plan || 'free';
+  const meta             = PLAN_META[plan];
+  const PlanIcon         = meta.icon;
+  const status           = userData?.subscriptionStatus;
+  const cancelAtPeriodEnd = userData?.cancelAtPeriodEnd ?? false;
+  const periodEnd        = userData?.currentPeriodEnd?.seconds
     ? new Date(userData.currentPeriodEnd.seconds * 1000).toLocaleDateString()
     : null;
+  const statusStyle = cancelAtPeriodEnd && status === 'active'
+    ? { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' }
+    : STATUS_COLORS[status] || null;
 
   const handleUpgrade = async (p) => {
     if (p.id === 'free' || p.id === plan) return;
@@ -491,10 +533,11 @@ function BillingView({ t, userData, user }) {
             {statusStyle && (
               <div style={{
                 padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                background: statusStyle.bg, color: statusStyle.text, textTransform: 'capitalize',
-              }}>{status?.replace('_', ' ')}</div>
+                background: statusStyle.bg, color: statusStyle.text,
+              }}>{statusLabel(status, cancelAtPeriodEnd)}</div>
             )}
           </div>
+
           {plan !== 'free' && userData?.stripeCustomerId && (
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={handleManage} disabled={portalBusy}
@@ -506,48 +549,83 @@ function BillingView({ t, userData, user }) {
                 }}>
                 {portalBusy ? 'Loading…' : 'Manage'}
               </button>
-              <button onClick={handleManage} disabled={portalBusy}
-                style={{
-                  padding: '10px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600,
-                  cursor: portalBusy ? 'default' : 'pointer',
-                  border: '1px solid rgba(239,68,68,0.35)',
-                  background: 'rgba(239,68,68,0.08)', color: '#f87171',
-                  fontFamily: "'Inter',sans-serif", opacity: portalBusy ? 0.7 : 1,
-                }}>
-                Cancel Plan
-              </button>
+
+              {/* Show Reactivate when scheduled for cancellation, Cancel otherwise */}
+              {cancelAtPeriodEnd ? (
+                <button onClick={handleManage} disabled={portalBusy}
+                  style={{
+                    padding: '10px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                    cursor: portalBusy ? 'default' : 'pointer',
+                    border: '1px solid rgba(34,197,94,0.35)',
+                    background: 'rgba(34,197,94,0.08)', color: '#4ade80',
+                    fontFamily: "'Inter',sans-serif", opacity: portalBusy ? 0.7 : 1,
+                  }}>
+                  Reactivate
+                </button>
+              ) : (
+                <button onClick={handleManage} disabled={portalBusy}
+                  style={{
+                    padding: '10px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                    cursor: portalBusy ? 'default' : 'pointer',
+                    border: '1px solid rgba(239,68,68,0.35)',
+                    background: 'rgba(239,68,68,0.08)', color: '#f87171',
+                    fontFamily: "'Inter',sans-serif", opacity: portalBusy ? 0.7 : 1,
+                  }}>
+                  Cancel Plan
+                </button>
+              )}
             </div>
           )}
         </div>
 
-        {/* Payment info rows — paid plans only */}
+        {/* Info rows — paid plans only */}
         {plan !== 'free' && (
           <div style={{
             borderTop: `1px solid ${t.border}`, paddingTop: 16,
-            display: 'flex', flexWrap: 'wrap', gap: 24,
+            display: 'flex', flexDirection: 'column', gap: 12,
           }}>
-            {/* Upcoming payment */}
-            {periodEnd && (
-              <div>
-                <div style={{ fontSize: 11, color: t.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
-                  Upcoming Payment
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24 }}>
+              {periodEnd && (
+                <div>
+                  <div style={{ fontSize: 11, color: t.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+                    {cancelAtPeriodEnd ? 'Access Ends' : 'Next Renewal'}
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>
+                    {cancelAtPeriodEnd ? (
+                      <span style={{ color: '#fbbf24' }}>{periodEnd}</span>
+                    ) : (
+                      <>
+                        {plan === 'pro' ? '$9.99' : '$19.99'}
+                        <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 400, marginLeft: 6 }}>on {periodEnd}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>
-                  {plan === 'pro' ? '$9.99' : '$19.99'}
-                  <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 400, marginLeft: 6 }}>on {periodEnd}</span>
-                </div>
+              )}
+            </div>
+
+            {/* Cancellation scheduled warning */}
+            {cancelAtPeriodEnd && periodEnd && (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', borderRadius: 10, flexWrap: 'wrap', gap: 10,
+                background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.25)',
+              }}>
+                <span style={{ fontSize: 13, color: '#fbbf24', fontWeight: 600 }}>
+                  Your plan is cancelled and will end on {periodEnd}. Click Reactivate to keep access.
+                </span>
               </div>
             )}
 
-            {/* Pending / past-due warning */}
+            {/* Past due warning */}
             {status === 'past_due' && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px', borderRadius: 10,
+                padding: '10px 14px', borderRadius: 10, flexWrap: 'wrap',
                 background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
               }}>
-                <span style={{ fontSize: 13, color: '#f87171', fontWeight: 600 }}>
-                  Payment failed — please update your payment method.
+                <span style={{ fontSize: 13, color: '#f87171', fontWeight: 600, flex: 1 }}>
+                  Payment failed — Stripe will retry automatically. Update your card to avoid losing access.
                 </span>
                 <button onClick={handleManage} disabled={portalBusy}
                   style={{
@@ -572,8 +650,9 @@ function BillingView({ t, userData, user }) {
           const isUpgrade = p.id !== 'free' && !isCurrent;
           const isDowngrade = p.id === 'free' && !isCurrent;
 
-          let btnLabel = isCurrent ? 'Current Plan' : isDowngrade ? 'Downgrade' : 'Upgrade';
+          let btnLabel = isCurrent ? 'Current Plan' : isDowngrade ? 'Downgrade to Free' : 'Upgrade';
           if (isLoading) btnLabel = 'Loading…';
+          if (isCurrent && cancelAtPeriodEnd) btnLabel = 'Cancelling';
 
           const cardInner = (
             <div style={{
@@ -586,8 +665,11 @@ function BillingView({ t, userData, user }) {
                 <div style={{
                   position: 'absolute', top: -10, left: 20,
                   padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
-                  background: 'linear-gradient(135deg,#FF6B35,#E91E8C,#7B2FBE)', color: '#fff',
-                }}>Active</div>
+                  background: cancelAtPeriodEnd
+                    ? 'linear-gradient(135deg,#b45309,#fbbf24)'
+                    : 'linear-gradient(135deg,#FF6B35,#E91E8C,#7B2FBE)',
+                  color: '#fff',
+                }}>{cancelAtPeriodEnd ? 'Cancelling' : 'Active'}</div>
               )}
               <div style={{ fontSize: 18, fontWeight: 800, color: t.text, marginBottom: 4 }}>{p.name}</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 16 }}>
@@ -623,7 +705,7 @@ function BillingView({ t, userData, user }) {
                 {btnLabel}
               </button>
 
-              {/* Cancel — only on active paid plan card */}
+              {/* Cancel / Reactivate — only on active paid plan card */}
               {isCurrent && p.id !== 'free' && (
                 <button
                   onClick={handleManage}
@@ -631,11 +713,12 @@ function BillingView({ t, userData, user }) {
                   style={{
                     width: '100%', padding: '9px 0', borderRadius: 10, fontSize: 12, fontWeight: 600,
                     marginTop: 8, cursor: 'pointer', fontFamily: "'Inter',sans-serif",
-                    border: '1px solid rgba(239,68,68,0.3)',
-                    background: 'rgba(239,68,68,0.07)', color: '#f87171',
+                    border: cancelAtPeriodEnd ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)',
+                    background: cancelAtPeriodEnd ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)',
+                    color: cancelAtPeriodEnd ? '#4ade80' : '#f87171',
                     opacity: portalBusy ? 0.7 : 1,
                   }}>
-                  Cancel Plan
+                  {cancelAtPeriodEnd ? 'Reactivate Plan' : 'Cancel Plan'}
                 </button>
               )}
             </div>

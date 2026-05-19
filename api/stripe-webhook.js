@@ -32,8 +32,6 @@ async function syncSubscription(sub) {
   if (!uid) return;
   const priceId = sub.items.data[0]?.price.id;
 
-  // Only grant paid access when Stripe confirms the subscription is live.
-  // 'incomplete' means the user opened checkout but payment hasn't succeeded yet.
   const hasAccess = ['active', 'trialing', 'past_due'].includes(sub.status);
   const plan = hasAccess ? (PLAN_BY_PRICE[priceId] || 'free') : 'free';
 
@@ -41,6 +39,7 @@ async function syncSubscription(sub) {
     plan,
     stripeSubscriptionId: sub.id,
     subscriptionStatus:   sub.status,
+    cancelAtPeriodEnd:    sub.cancel_at_period_end ?? false,
     currentPeriodEnd:     sub.current_period_end
       ? Timestamp.fromMillis(sub.current_period_end * 1000)
       : null,
@@ -72,6 +71,7 @@ export default async function handler(req, res) {
         await db.collection('users').doc(uid).update({
           plan: 'free', stripeSubscriptionId: null,
           subscriptionStatus: 'canceled', currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
         });
       }
       break;
