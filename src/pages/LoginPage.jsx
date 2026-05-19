@@ -210,6 +210,9 @@ function friendlyError(code) {
     'auth/invalid-email':        'Please enter a valid email address.',
     'auth/popup-closed-by-user': 'Google sign-in was cancelled.',
     'auth/invalid-credential':   'Incorrect email or password.',
+    'auth/unauthorized-domain':  'This domain is not authorised in Firebase. Add it under Authentication → Settings → Authorized domains.',
+    'auth/operation-not-allowed': 'Google sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.',
+    'auth/popup-blocked':        'Popup was blocked by your browser. Please allow popups for this site.',
   };
-  return map[code] || 'Something went wrong. Please try again.';
+  return map[code] || `Something went wrong (${code}). Please try again.`;
 }
