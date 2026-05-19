@@ -7,10 +7,9 @@ import {
 } from 'lucide-react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useT } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { db, auth, storage } from '../firebase';
+import { db, auth } from '../firebase';
 
 /* ─── constants ─────────────────────────────────────────── */
 const LIMITS = {
@@ -778,9 +777,17 @@ function SettingsView({ t, user, userData }) {
     setPhotoSuccess(false);
     setUploading(true);
     try {
-      const path = storageRef(storage, `avatars/${user.uid}`);
-      await uploadBytes(path, file);
-      const url = await getDownloadURL(path);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', 'avatars');
+      formData.append('public_id', user.uid);
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: 'POST', body: formData },
+      );
+      if (!res.ok) throw new Error('Cloudinary upload failed');
+      const { secure_url: url } = await res.json();
       await Promise.all([
         updateProfile(auth.currentUser, { photoURL: url }),
         updateDoc(doc(db, 'users', user.uid), { photoURL: url }),
