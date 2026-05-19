@@ -27,13 +27,24 @@ export default async function handler(req, res) {
   const userSnap = await userRef.get();
   let customerId = userSnap.data()?.stripeCustomerId ?? null;
 
-  if (!customerId) {
+  const createCustomer = async () => {
     const customer = await stripe.customers.create({
       email: userEmail,
       metadata: { firebaseUID: userId },
     });
-    customerId = customer.id;
-    await userRef.update({ stripeCustomerId: customerId });
+    await userRef.update({ stripeCustomerId: customer.id });
+    return customer.id;
+  };
+
+  if (!customerId) {
+    customerId = await createCustomer();
+  } else {
+    // Verify the customer exists in the current Stripe mode (live vs test)
+    try {
+      await stripe.customers.retrieve(customerId);
+    } catch {
+      customerId = await createCustomer();
+    }
   }
 
   try {
