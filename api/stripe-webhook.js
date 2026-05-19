@@ -78,9 +78,21 @@ export default async function handler(req, res) {
     }
 
     case 'invoice.payment_failed': {
-      const cid   = event.data.object.customer;
-      const snap  = await db.collection('users').where('stripeCustomerId', '==', cid).limit(1).get();
+      const cid  = event.data.object.customer;
+      const snap = await db.collection('users').where('stripeCustomerId', '==', cid).limit(1).get();
       if (!snap.empty) await snap.docs[0].ref.update({ subscriptionStatus: 'past_due' });
+      break;
+    }
+
+    // Payment recovered after past_due — restore active status immediately
+    case 'invoice.paid': {
+      const inv = event.data.object;
+      // Only care about subscription invoices, not one-off charges
+      if (inv.billing_reason !== 'subscription_cycle' && inv.billing_reason !== 'subscription_create') break;
+      const subId = inv.subscription;
+      if (!subId) break;
+      const sub = await stripe.subscriptions.retrieve(subId);
+      await syncSubscription(sub);
       break;
     }
   }
