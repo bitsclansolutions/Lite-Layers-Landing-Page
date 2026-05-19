@@ -5,13 +5,14 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import Logo from '../components/Logo';
 
 const ROUTE_LINKS = {
-  'Privacy Policy': '/privacy-policy',
-  'Terms of Service': '/terms',
+  'Pricing':         '#pricing',
+  'Privacy Policy':  '/privacy-policy',
+  'Terms of Service':'/terms',
 };
 
 const LINK_GROUPS = [
   { title: 'Features', links: ['AI Scene Adding', 'Background Removal', 'Smart Resize', 'Batch Editing *', 'Virtual Try-On *'] },
-  { title: 'Company',  links: ['About', 'Blog', 'Careers', 'Press Kit'] },
+  { title: 'Company',  links: ['About', 'Blog', 'Pricing', 'Press Kit'] },
   { title: 'Support',  links: ['Help Center', 'Contact Us', 'Privacy Policy', 'Terms of Service'] },
 ];
 
@@ -69,16 +70,16 @@ export default function FooterSection() {
                 const sharedStyle = { fontSize: 13, color: t.textMuted, textDecoration: 'none', transition: 'color .2s' };
                 return (
                   <div key={label} style={{ marginBottom: 10 }}>
-                    {to ? (
+                    {to && !to.startsWith('#') ? (
                       <Link to={to} style={sharedStyle}
                         onMouseEnter={e => e.currentTarget.style.color = '#E91E8C'}
                         onMouseLeave={e => e.currentTarget.style.color = t.textMuted}>
                         {label}
                       </Link>
                     ) : (
-                      <a href="#" style={sharedStyle}
-                        onMouseEnter={e => e.target.style.color = '#E91E8C'}
-                        onMouseLeave={e => e.target.style.color = t.textMuted}>
+                      <a href={to || '#'} style={sharedStyle}
+                        onMouseEnter={e => e.currentTarget.style.color = '#E91E8C'}
+                        onMouseLeave={e => e.currentTarget.style.color = t.textMuted}>
                         {label}
                       </a>
                     )}

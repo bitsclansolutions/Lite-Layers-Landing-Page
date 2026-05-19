@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(cp \"/c/Users/azhar/AndroidStudioProjects/LiteLayers/assets/logo1.png\" \"/c/Users/azhar/OneDrive/Desktop/General/Lite Layers Landing/public/logo-dark.png\")",
+      "Bash(cp \"/c/Users/azhar/AndroidStudioProjects/LiteLayers/assets/logo.png\" \"/c/Users/azhar/OneDrive/Desktop/General/Lite Layers Landing/public/logo-light.png\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\public\\\\scenes\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\\\\context\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\\\\hooks\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\\\\constants\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\\\\components\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\\\\pages\")",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\" -Recurse -File | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\\", \"\"\\) })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\" -Recurse -File | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\src\\\\\",\"\"\\) })",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\public\" -Recurse -File | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\public\\\\\",\"public\\\\\"\\) })",
+      "PowerShell(cmd /c \"dir /s /b `\"C:\\\\Users\\\\azhar\\\\OneDrive\\\\Desktop\\\\General\\\\Lite Layers Landing\\\\public`\"\")",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git ls-remote *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(findstr firebase *)",
+      "Bash(findstr /i firebase)"
+    ]
+  }
+}
