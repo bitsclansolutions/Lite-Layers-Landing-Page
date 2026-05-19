@@ -22,7 +22,10 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(findstr firebase *)",
-      "Bash(findstr /i firebase)"
+      "Bash(findstr /i firebase)",
+      "Bash(git branch *)",
+      "Bash(git stash *)",
+      "Bash(git commit *)"
     ]
   }
 }
