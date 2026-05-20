@@ -496,8 +496,10 @@ function BillingView({ t, userData, user }) {
   return (
     <div>
       <h1 style={{ fontSize: 26, fontWeight: 800, color: t.text, marginBottom: 4 }}>Billing</h1>
-      <p style={{ color: t.textMuted, fontSize: 14, marginBottom: 32 }}>
-        Manage your subscription and billing details.
+      <p style={{ color: cancelAtPeriodEnd ? '#fbbf24' : t.textMuted, fontSize: 14, marginBottom: 32 }}>
+        {cancelAtPeriodEnd && periodEnd
+          ? `Your ${meta.label} plan is cancelled and will end on ${periodEnd}. Reactivate to keep access.`
+          : 'Manage your subscription and billing details.'}
       </p>
 
       {error && (
@@ -514,8 +516,8 @@ function BillingView({ t, userData, user }) {
         borderRadius: 16, padding: '24px', marginBottom: 32,
         boxShadow: `0 0 40px ${meta.color}14`,
       }}>
-        <div style={{ fontSize: 12, color: t.textMuted, marginBottom: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Active Plan
+        <div style={{ fontSize: 12, color: cancelAtPeriodEnd ? '#fbbf24' : t.textMuted, marginBottom: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          {cancelAtPeriodEnd ? 'Cancelled' : 'Active Plan'}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: plan !== 'free' ? 20 : 0 }}>
@@ -655,7 +657,6 @@ function BillingView({ t, userData, user }) {
 
           let btnLabel = isCurrent ? 'Current Plan' : isDowngrade ? 'Downgrade to Free' : 'Upgrade';
           if (isLoading) btnLabel = 'Loading…';
-          if (isCurrent && cancelAtPeriodEnd) btnLabel = 'Cancelling';
 
           const cardInner = (
             <div style={{

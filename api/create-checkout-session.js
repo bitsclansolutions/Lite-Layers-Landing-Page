@@ -47,6 +47,25 @@ export default async function handler(req, res) {
     }
   }
 
+  // If the user already has an active subscription, update it in place
+  // instead of creating a second one.
+  const existingSubId = userSnap.data()?.stripeSubscriptionId ?? null;
+  if (existingSubId) {
+    try {
+      const existingSub = await stripe.subscriptions.retrieve(existingSubId);
+      if (['active', 'trialing', 'past_due'].includes(existingSub.status)) {
+        await stripe.subscriptions.update(existingSubId, {
+          items: [{ id: existingSub.items.data[0].id, price: PRICE_IDS[plan] }],
+          proration_behavior: 'always_invoice',
+          metadata: { firebaseUID: userId, plan },
+        });
+        return res.status(200).json({ url: `${process.env.APP_URL}/dashboard?tab=billing&upgraded=true` });
+      }
+    } catch {
+      // Subscription not found or stale — fall through to create a new one
+    }
+  }
+
   try {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
