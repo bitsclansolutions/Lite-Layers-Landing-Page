@@ -34,7 +34,7 @@ const STATUS_COLORS = {
 };
 
 function statusLabel(status, cancelAtPeriodEnd) {
-  if (cancelAtPeriodEnd && status === 'active') return 'Cancelling';
+  if (cancelAtPeriodEnd && status === 'active') return 'Cancelled';
   const map = {
     active: 'Active', trialing: 'Trialing', past_due: 'Past Due',
     canceled: 'Canceled', incomplete: 'Pending', incomplete_expired: 'Expired',
@@ -665,17 +665,18 @@ function BillingView({ t, userData, user }) {
               padding: '24px', position: 'relative',
               height: '100%', boxSizing: 'border-box',
             }}>
-              {isCurrent && (
-                <div style={{
-                  position: 'absolute', top: -10, left: 20,
-                  padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
-                  background: cancelAtPeriodEnd
-                    ? 'linear-gradient(135deg,#b45309,#fbbf24)'
-                    : 'linear-gradient(135deg,#FF6B35,#E91E8C,#7B2FBE)',
-                  color: '#fff',
-                }}>{cancelAtPeriodEnd ? 'Cancelling' : 'Active'}</div>
-              )}
-              <div style={{ fontSize: 18, fontWeight: 800, color: t.text, marginBottom: 4 }}>{p.name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: t.text }}>{p.name}</div>
+                {isCurrent && (
+                  <div style={{
+                    padding: '2px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                    background: cancelAtPeriodEnd
+                      ? 'linear-gradient(135deg,#b45309,#fbbf24)'
+                      : 'linear-gradient(135deg,#FF6B35,#E91E8C,#7B2FBE)',
+                    color: '#fff', flexShrink: 0,
+                  }}>{cancelAtPeriodEnd ? 'Cancelled' : 'Active'}</div>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 16 }}>
                 <span style={{ fontSize: 26, fontWeight: 900, color: m.color }}>{p.price}</span>
                 {p.period && <span style={{ fontSize: 13, color: t.textMuted }}>{p.period}</span>}
@@ -687,27 +688,30 @@ function BillingView({ t, userData, user }) {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => isUpgrade ? handleUpgrade(p) : isDowngrade ? handleManage() : null}
-                disabled={isCurrent || isLoading}
-                style={{
-                  width: '100%', padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: 700,
-                  textAlign: 'center', cursor: isCurrent ? 'default' : 'pointer',
-                  border: isDowngrade ? `1px solid ${t.border}` : 'none',
-                  background: isCurrent
-                    ? t.bgBar
-                    : isUpgrade
-                      ? p.id === 'business'
-                        ? 'linear-gradient(135deg,#7B2FBE,#E91E8C)'
-                        : 'linear-gradient(135deg,#FF6B35,#E91E8C)'
-                      : t.outlineBtn,
-                  color: isCurrent ? t.textMuted : isDowngrade ? t.text : '#fff',
-                  fontFamily: "'Inter',sans-serif",
-                  opacity: isLoading ? 0.7 : 1,
-                  transition: 'opacity .2s',
-                }}>
-                {btnLabel}
-              </button>
+              {/* Hide the neutral "Current Plan" button when cancelling — Reactivate below is the only action */}
+              {!(isCurrent && cancelAtPeriodEnd) && (
+                <button
+                  onClick={() => isUpgrade ? handleUpgrade(p) : isDowngrade ? handleManage() : null}
+                  disabled={isCurrent || isLoading}
+                  style={{
+                    width: '100%', padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: 700,
+                    textAlign: 'center', cursor: isCurrent ? 'default' : 'pointer',
+                    border: isDowngrade ? `1px solid ${t.border}` : 'none',
+                    background: isCurrent
+                      ? t.bgBar
+                      : isUpgrade
+                        ? p.id === 'business'
+                          ? 'linear-gradient(135deg,#7B2FBE,#E91E8C)'
+                          : 'linear-gradient(135deg,#FF6B35,#E91E8C)'
+                        : t.outlineBtn,
+                    color: isCurrent ? t.textMuted : isDowngrade ? t.text : '#fff',
+                    fontFamily: "'Inter',sans-serif",
+                    opacity: isLoading ? 0.7 : 1,
+                    transition: 'opacity .2s',
+                  }}>
+                  {btnLabel}
+                </button>
+              )}
 
               {/* Cancel / Reactivate — only on active paid plan card */}
               {isCurrent && p.id !== 'free' && (
