@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
 import {
   LayoutDashboard, BarChart2, CreditCard, Settings,
   LogOut, Crown, Zap, RefreshCw, Download, ChevronRight,
-  ChevronLeft, Moon, Sun, Camera, Loader,
+  ChevronLeft, Moon, Sun, Camera, Loader, Menu, X,
 } from 'lucide-react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -767,6 +767,9 @@ function BillingView({ t, userData, user }) {
 }
 
 function SettingsView({ t, user, userData }) {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
   const isGoogle  = user?.providerData?.[0]?.providerId === 'google.com';
   const photoURL  = userData?.photoURL || user?.photoURL || null;
   const initials  = user?.displayName
@@ -777,6 +780,54 @@ function SettingsView({ t, user, userData }) {
   const [uploading, setUploading] = useState(false);
   const [photoError, setPhotoError] = useState('');
   const [photoSuccess, setPhotoSuccess] = useState(false);
+
+  const [deleteOpen,    setDeleteOpen]    = useState(false);
+  const [deleteText,    setDeleteText]    = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError,   setDeleteError]   = useState('');
+
+  const plan             = userData?.plan || 'free';
+  const cancelAtPeriodEnd = (userData?.cancelAtPeriodEnd ?? false) && userData?.subscriptionStatus === 'active';
+  const hasActiveSub     = ['active', 'trialing', 'past_due'].includes(userData?.subscriptionStatus) && plan !== 'free';
+  const periodEnd        = userData?.currentPeriodEnd?.seconds
+    ? new Date(userData.currentPeriodEnd.seconds * 1000).toLocaleDateString()
+    : null;
+
+  function deleteWarning() {
+    if (hasActiveSub && !cancelAtPeriodEnd) {
+      return `Your ${plan.charAt(0).toUpperCase() + plan.slice(1)} subscription will be cancelled immediately and you'll lose access right away.`;
+    }
+    if (hasActiveSub && cancelAtPeriodEnd) {
+      return `Your remaining plan benefits will be forfeited immediately${periodEnd ? ` (access would have continued until ${periodEnd})` : ''}.`;
+    }
+    return 'Your account and all data will be permanently deleted.';
+  }
+
+  const handleDeleteAccount = async () => {
+    if (deleteText !== 'DELETE') return;
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ userId: user.uid }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Deletion failed');
+      }
+      await signOut();
+      navigate('/', { replace: true });
+    } catch (err) {
+      setDeleteError(err.message || 'Something went wrong. Please try again.');
+      setDeleteLoading(false);
+    }
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -973,22 +1024,106 @@ function SettingsView({ t, user, userData }) {
 
       {/* ── Danger zone ── */}
       <div style={{
-        background: t.bgCard, border: `1px solid ${t.border}`,
+        background: t.bgCard, border: `1px solid rgba(239,68,68,0.25)`,
         borderRadius: 16, padding: '24px',
       }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: t.text, marginBottom: 4 }}>Danger Zone</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#f87171', marginBottom: 4 }}>Danger Zone</div>
         <div style={{ fontSize: 13, color: t.textMuted, marginBottom: 16 }}>
           These actions are permanent and cannot be undone.
         </div>
-        <button style={{
-          padding: '10px 18px', borderRadius: 10, fontSize: 13, fontWeight: 600,
-          cursor: 'pointer', background: 'rgba(239,68,68,0.1)',
-          border: '1px solid rgba(239,68,68,0.3)', color: '#f87171',
-          fontFamily: "'Inter',sans-serif",
-        }}>
+        <button
+          onClick={() => { setDeleteOpen(true); setDeleteText(''); setDeleteError(''); }}
+          style={{
+            padding: '10px 18px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', background: 'rgba(239,68,68,0.1)',
+            border: '1px solid rgba(239,68,68,0.3)', color: '#f87171',
+            fontFamily: "'Inter',sans-serif",
+          }}>
           Delete Account
         </button>
       </div>
+
+      {/* ── Delete account modal ── */}
+      {deleteOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 999,
+          background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        }}
+          onClick={e => { if (e.target === e.currentTarget && !deleteLoading) { setDeleteOpen(false); } }}
+        >
+          <div style={{
+            width: '100%', maxWidth: 440,
+            background: t.bgCard, border: '1.5px solid rgba(239,68,68,0.35)',
+            borderRadius: 20, padding: '32px 28px',
+            boxShadow: '0 0 60px rgba(239,68,68,0.15)',
+          }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#f87171', marginBottom: 8 }}>
+              Delete Account
+            </div>
+            <div style={{ fontSize: 13, color: t.textMuted, lineHeight: 1.7, marginBottom: 20 }}>
+              {deleteWarning()}
+              {' '}All your projects, usage history, and account data will be permanently removed.
+            </div>
+
+            <div style={{
+              padding: '12px 14px', borderRadius: 10, marginBottom: 20, fontSize: 13,
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+              color: '#fca5a5', lineHeight: 1.6,
+            }}>
+              This action <strong>cannot be undone</strong>. Type <strong>DELETE</strong> below to confirm.
+            </div>
+
+            <input
+              value={deleteText}
+              onChange={e => setDeleteText(e.target.value)}
+              placeholder="Type DELETE to confirm"
+              autoComplete="off"
+              style={{
+                width: '100%', padding: '11px 14px', borderRadius: 10, fontSize: 14,
+                background: t.bgAlt, color: t.text, border: `1px solid ${deleteText === 'DELETE' ? 'rgba(239,68,68,0.5)' : t.border}`,
+                outline: 'none', boxSizing: 'border-box', fontFamily: "'Inter',sans-serif",
+                marginBottom: 16,
+              }}
+            />
+
+            {deleteError && (
+              <div style={{
+                padding: '10px 14px', borderRadius: 10, fontSize: 13, marginBottom: 16,
+                background: 'rgba(239,68,68,0.12)', color: '#f87171',
+                border: '1px solid rgba(239,68,68,0.25)',
+              }}>{deleteError}</div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setDeleteOpen(false)}
+                disabled={deleteLoading}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', background: t.bgBar, border: `1px solid ${t.border}`,
+                  color: t.textMuted, fontFamily: "'Inter',sans-serif",
+                  opacity: deleteLoading ? 0.6 : 1,
+                }}>
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteText !== 'DELETE' || deleteLoading}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                  cursor: deleteText === 'DELETE' && !deleteLoading ? 'pointer' : 'default',
+                  background: 'rgba(239,68,68,0.85)', border: 'none', color: '#fff',
+                  fontFamily: "'Inter',sans-serif",
+                  opacity: deleteText !== 'DELETE' || deleteLoading ? 0.45 : 1,
+                  transition: 'opacity .2s',
+                }}>
+                {deleteLoading ? 'Deleting…' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1134,7 +1269,7 @@ function Sidebar({ t, active, onSelect, user, userData, onSignOut, collapsed }) 
 }
 
 /* ─── dashboard header ───────────────────────────────────── */
-function DashboardHeader({ t, active, isDark, toggle, isMobile }) {
+function DashboardHeader({ t, active, isDark, toggle, isMobile, menuOpen, onMenuToggle }) {
   const pageTitle = NAV.find(n => n.id === active)?.label ?? 'Dashboard';
 
   const sidebarBg = t.id === 'dark'
@@ -1151,6 +1286,19 @@ function DashboardHeader({ t, active, isDark, toggle, isMobile }) {
       backdropFilter: 'blur(16px)',
       gap: 16,
     }}>
+      {/* Mobile: hamburger on left */}
+      {isMobile && (
+        <button
+          onClick={onMenuToggle}
+          style={{
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            color: t.text, padding: 4, display: 'flex', alignItems: 'center',
+            flexShrink: 0,
+          }}>
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      )}
+
       {/* Page title */}
       <div style={{ flex: 1 }}>
         <span style={{ fontSize: 17, fontWeight: 700, color: t.text }}>{pageTitle}</span>
@@ -1158,7 +1306,6 @@ function DashboardHeader({ t, active, isDark, toggle, isMobile }) {
 
       {/* Right side */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {/* Theme toggle */}
         <button
           onClick={toggle}
           title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -1179,7 +1326,6 @@ function DashboardHeader({ t, active, isDark, toggle, isMobile }) {
             }
           </div>
         </button>
-
       </div>
     </header>
   );
@@ -1200,12 +1346,14 @@ export default function DashboardPage() {
   const [usage, setUsage]           = useState(null);
   const [monthlyData, setMonthly]   = useState([]);
   const [collapsed, setCollapsed]   = useState(false);
+  const [menuOpen, setMenuOpen]     = useState(false);
   const [loadingUsage, setLoadingUsage] = useState(false);
   const [usageError, setUsageError]     = useState('');
 
   const setActive = (tab) => {
     setActiveState(tab);
     setSearchParams(tab === 'overview' ? {} : { tab });
+    setMenuOpen(false);
   };
 
   const fetchUsage = async (uid, currentUserData) => {
@@ -1317,12 +1465,13 @@ export default function DashboardPage() {
           isDark={isDark}
           toggle={toggle}
           isMobile={isMobile}
+          menuOpen={menuOpen}
+          onMenuToggle={() => setMenuOpen(o => !o)}
         />
 
         <main style={{
           flex: 1, overflowY: 'auto',
           padding: isMobile ? '20px 16px' : '36px 40px',
-          paddingBottom: isMobile ? 76 : undefined,
         }}>
           {active === 'overview' && <Overview {...viewProps} onNavigate={setActive} onRefresh={() => user && fetchUsage(user.uid)} />}
           {active === 'usage'    && <UsageView {...viewProps} />}
@@ -1331,31 +1480,96 @@ export default function DashboardPage() {
         </main>
       </div>
 
-      {/* Mobile bottom navigation bar */}
-      {isMobile && (
-        <nav style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0,
-          height: 60, display: 'flex', alignItems: 'stretch',
-          background: t.bgCard, borderTop: `1px solid ${t.border}`,
-          zIndex: 100,
-        }}>
-          {NAV.map(({ id, label, icon: Icon }) => {
-            const isActive = active === id;
-            return (
-              <button key={id} onClick={() => setActive(id)} style={{
-                flex: 1, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 3,
-                border: 'none', background: 'transparent', cursor: 'pointer',
-                color: isActive ? '#E91E8C' : t.textMuted,
-                fontFamily: "'Inter',sans-serif",
-                transition: 'color .15s',
-              }}>
-                <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
-                <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500 }}>{label}</span>
+      {/* Mobile slide-down menu */}
+      {isMobile && menuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setMenuOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 98,
+              background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)',
+            }}
+          />
+          {/* Panel */}
+          <div style={{
+            position: 'fixed', top: 56, left: 12, right: 12, zIndex: 99,
+            borderRadius: 20,
+            background: t.id === 'dark' ? 'rgba(15,8,30,0.97)' : 'rgba(255,255,255,0.97)',
+            backdropFilter: 'blur(24px)',
+            border: `1px solid ${t.border}`,
+            boxShadow: '0 16px 48px rgba(0,0,0,0.3)',
+            padding: '8px 16px 20px',
+          }}>
+            {/* Nav items */}
+            {NAV.map(({ id, label, icon: Icon }) => {
+              const isActive = active === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActive(id)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '14px 12px',
+                    background: 'transparent',
+                    borderTop: 'none', borderLeft: 'none', borderRight: 'none',
+                    borderBottom: `1px solid ${t.border}`,
+                    cursor: 'pointer', fontFamily: "'Inter',sans-serif",
+                    fontSize: 16, fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#E91E8C' : t.text,
+                    textAlign: 'left',
+                  }}>
+                  <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
+                  {label}
+                  {isActive && (
+                    <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: '#E91E8C', flexShrink: 0 }} />
+                  )}
+                </button>
+              );
+            })}
+
+            {/* User info + sign out */}
+            <div style={{ paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {user && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 4px 10px', borderBottom: `1px solid ${t.border}` }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(135deg,#FF6B35,#E91E8C)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14, fontWeight: 700, color: '#fff', overflow: 'hidden',
+                  }}>
+                    {(userData?.photoURL || user.photoURL)
+                      ? <img src={userData?.photoURL || user.photoURL} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : (user.displayName ? user.displayName.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() : user.email?.[0]?.toUpperCase() ?? '?')
+                    }
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    {user.displayName && (
+                      <div style={{ fontSize: 14, fontWeight: 600, color: t.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {user.displayName}
+                      </div>
+                    )}
+                    <div style={{ fontSize: 12, color: t.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={() => { setMenuOpen(false); signOut(); }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '13px 0', borderRadius: 14, fontSize: 15, fontWeight: 600,
+                  cursor: 'pointer', border: '1px solid rgba(239,68,68,0.3)',
+                  background: 'rgba(239,68,68,0.08)', color: '#f87171',
+                  fontFamily: "'Inter',sans-serif",
+                }}>
+                <LogOut size={16} style={{ transform: 'scaleX(-1)' }} />
+                Sign Out
               </button>
-            );
-          })}
-        </nav>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
