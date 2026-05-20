@@ -61,8 +61,14 @@ export default async function handler(req, res) {
         });
         return res.status(200).json({ url: `${process.env.APP_URL}/dashboard?tab=billing&upgraded=true` });
       }
+      // Sub exists in Stripe but is canceled/expired — clear the stale ID so
+      // the checkout below creates a fresh subscription cleanly.
+      if (['canceled', 'incomplete_expired'].includes(existingSub.status)) {
+        await userRef.update({ stripeSubscriptionId: null });
+      }
     } catch {
-      // Subscription not found or stale — fall through to create a new one
+      // Sub not found in Stripe at all — clear the stale ID and fall through.
+      await userRef.update({ stripeSubscriptionId: null });
     }
   }
 

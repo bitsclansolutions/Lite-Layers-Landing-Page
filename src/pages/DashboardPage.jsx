@@ -76,6 +76,14 @@ function lastNMonths(n) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   });
 }
+// Returns the Firestore key for the user's current usage period.
+// Paid users: use the Stripe billing period start date (YYYY-MM-DD) stored by the webhook.
+// Free users: fall back to the first day of the current calendar month.
+function currentPeriodKey(userData) {
+  if (userData?.usagePeriodStart) return userData.usagePeriodStart;
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+}
 function monthLabel(ym) {
   const [y, m] = ym.split('-');
   return new Date(+y, +m - 1, 15).toLocaleString('default', { month: 'short' });
@@ -1198,10 +1206,11 @@ export default function DashboardPage() {
     setSearchParams(tab === 'overview' ? {} : { tab });
   };
 
-  const fetchUsage = async (uid) => {
+  const fetchUsage = async (uid, currentUserData) => {
     setLoadingUsage(true);
     setUsageError('');
     try {
+      // Historical chart: last 6 calendar months
       const months = lastNMonths(6);
       const results = await Promise.all(
         months.map(ym =>
@@ -1215,7 +1224,16 @@ export default function DashboardPage() {
         )
       );
       setMonthly(results);
-      setUsage(results[results.length - 1].values);
+
+      // Current period usage: billing-cycle-aligned key so limits reset on
+      // the actual renewal date, not the 1st of the calendar month.
+      const periodDoc = currentPeriodKey(currentUserData);
+      const periodSnap = await getDoc(doc(db, 'users', uid, 'usage', periodDoc));
+      setUsage(
+        periodSnap.exists()
+          ? periodSnap.data()
+          : { bgRemovals: 0, sceneGenerations: 0, resizes: 0, exports: 0 }
+      );
     } catch (err) {
       setUsageError(
         err?.code === 'permission-denied'
@@ -1228,14 +1246,14 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!user) return;
-    fetchUsage(user.uid);
-  }, [user]);
+    if (!user || !userData) return;
+    fetchUsage(user.uid, userData);
+  }, [user, userData?.usagePeriodStart]);
 
   const viewProps = {
     t, user, userData, usage, monthlyData,
     loadingUsage, usageError,
-    onRefresh: () => user && fetchUsage(user.uid),
+    onRefresh: () => user && fetchUsage(user.uid, userData),
   };
 
   const SIDEBAR_W = collapsed ? 64 : 240;

@@ -40,6 +40,13 @@ async function syncSubscription(sub) {
   const hasAccess = ['active', 'trialing', 'past_due'].includes(sub.status);
   const plan = hasAccess ? (PLAN_BY_PRICE[priceId] || 'free') : 'free';
 
+  // usagePeriodStart drives which Firestore usage doc is "current".
+  // When Stripe renews the subscription a new current_period_start arrives,
+  // automatically pointing usage reads/writes at a fresh document.
+  const usagePeriodStart = sub.current_period_start
+    ? new Date(sub.current_period_start * 1000).toISOString().split('T')[0]
+    : null;
+
   await db.collection('users').doc(uid).update({
     plan,
     stripeSubscriptionId: sub.id,
@@ -48,6 +55,7 @@ async function syncSubscription(sub) {
     currentPeriodEnd:     sub.current_period_end
       ? Timestamp.fromMillis(sub.current_period_end * 1000)
       : null,
+    usagePeriodStart,
   });
 }
 
@@ -93,7 +101,8 @@ export default async function handler(req, res) {
     case 'invoice.paid': {
       const inv = event.data.object;
       // Only care about subscription invoices, not one-off charges
-      if (inv.billing_reason !== 'subscription_cycle' && inv.billing_reason !== 'subscription_create') break;
+      const handledReasons = ['subscription_cycle', 'subscription_create', 'subscription_update'];
+      if (!handledReasons.includes(inv.billing_reason)) break;
       const subId = inv.subscription;
       if (!subId) break;
       const sub = await stripe.subscriptions.retrieve(subId);

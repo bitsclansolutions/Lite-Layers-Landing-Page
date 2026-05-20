@@ -39,6 +39,8 @@ export function AuthProvider({ children }) {
               stripeSubscriptionId: null,
               subscriptionStatus: null,
               currentPeriodEnd: null,
+              cancelAtPeriodEnd: false,
+              usagePeriodStart: null,
               createdAt: serverTimestamp(),
             };
             await setDoc(ref, newDoc);
