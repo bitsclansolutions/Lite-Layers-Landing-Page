@@ -129,7 +129,7 @@ export default function ScenesSection() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: mob ? 10 : 16 }} className="c4">
+          <div style={{ display: 'grid', gridTemplateColumns: mob ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: mob ? 10 : 16 }} className="c4">
             {SCENES.map((scene, i) => (
               <div
                 key={i}

@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../context/ThemeContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -14,6 +15,7 @@ const INPUT = (t) => ({
 
 export default function LoginPage() {
   const { t } = useT();
+  const mob = useIsMobile();
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,7 +69,7 @@ export default function LoginPage() {
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '16px 28px',
+        padding: mob ? '12px 16px' : '16px 28px',
         borderBottom: `1px solid ${t.border}`,
         background: t.id === 'dark' ? 'rgba(7,3,15,0.85)' : 'rgba(255,255,255,0.9)',
         backdropFilter: 'blur(16px)',
@@ -91,7 +93,7 @@ export default function LoginPage() {
       <div style={{
         width: '100%', maxWidth: 420,
         background: t.bgCard, border: `1px solid ${t.border}`,
-        borderRadius: 24, padding: '40px 36px',
+        borderRadius: 24, padding: mob ? '28px 20px' : '40px 36px',
         backdropFilter: 'blur(24px)',
         boxShadow: t.shadowCard,
       }}>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { useT } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 import Navbar from '../components/Navbar';
 
 const PLANS = [
@@ -59,6 +60,7 @@ const PLANS = [
 
 export default function PricingPage() {
   const { t } = useT();
+  const mob = useIsMobile();
   const { user, userData } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(null);
@@ -145,7 +147,7 @@ export default function PricingPage() {
                     {plan.name}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
-                    <span style={{ fontSize: 44, fontWeight: 900, color: t.text }}>
+                    <span style={{ fontSize: mob ? 34 : 44, fontWeight: 900, color: t.text }}>
                       {plan.price === 0 ? 'Free' : `$${plan.price}`}
                     </span>
                     {plan.period && (

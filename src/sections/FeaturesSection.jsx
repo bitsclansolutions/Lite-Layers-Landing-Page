@@ -61,7 +61,7 @@ export default function FeaturesSection() {
 
         {/* Feature 1: AI Scene Generation */}
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          display: 'grid', gridTemplateColumns: mob ? '1fr' : '1fr 1fr',
           gap: mob ? 32 : 80, alignItems: 'center', marginBottom: mob ? 60 : 130,
         }} className="c2">
           <div>
@@ -94,7 +94,7 @@ export default function FeaturesSection() {
 
         {/* Feature 2: AI Background Replacement */}
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          display: 'grid', gridTemplateColumns: mob ? '1fr' : '1fr 1fr',
           gap: mob ? 32 : 80, alignItems: 'center', marginBottom: mob ? 60 : 130,
         }} className="c2">
           <BeforeAfter
@@ -102,8 +102,9 @@ export default function FeaturesSection() {
             afterImg={IMG.bgAfter}
             beforeLabel="Original Background"
             afterLabel="New Background"
+            style={{ order: mob ? 2 : 0 }}
           />
-          <div>
+          <div style={{ order: mob ? 1 : 0 }}>
             <Pill col="#7B2FBE" label="Feature 02" />
             <h3 style={{
               fontSize: mob ? 26 : 'clamp(26px,3.5vw,42px)', fontWeight: 800,
@@ -127,7 +128,7 @@ export default function FeaturesSection() {
 
         {/* Feature 3: Smart Resize */}
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
+          display: 'grid', gridTemplateColumns: mob ? '1fr' : '1fr 1fr',
           gap: mob ? 32 : 80, alignItems: 'center',
         }} className="c2">
           <div>
@@ -146,7 +147,7 @@ export default function FeaturesSection() {
               Export in the exact dimensions every platform requires — pre-configured presets,
               no manual cropping, no guesswork.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: mob ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 10 }}>
               {RESIZE_PRESETS.map(({ p, s, Icon }) => (
                 <div key={p} style={{
                   background: t.stepBg, border: `1px solid ${t.border}`,

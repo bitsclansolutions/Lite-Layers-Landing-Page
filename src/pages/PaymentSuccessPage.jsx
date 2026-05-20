@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 import { useT } from '../context/ThemeContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function PaymentSuccessPage() {
   const { t } = useT();
+  const mob = useIsMobile();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export default function PaymentSuccessPage() {
       <div style={{
         textAlign: 'center', maxWidth: 420,
         background: t.bgCard, border: `1.5px solid rgba(34,197,94,0.35)`,
-        borderRadius: 24, padding: '48px 36px',
+        borderRadius: 24, padding: mob ? '32px 20px' : '48px 36px',
         backdropFilter: 'blur(24px)', boxShadow: '0 0 60px rgba(34,197,94,0.12)',
       }}>
         <CheckCircle size={56} color="#4ade80" style={{ marginBottom: 20 }} />

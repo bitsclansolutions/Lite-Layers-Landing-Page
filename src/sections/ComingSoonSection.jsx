@@ -30,7 +30,7 @@ export default function ComingSoonSection() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: mob ? 20 : 28 }} className="up-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: mob ? '1fr' : '1fr 1fr', gap: mob ? 20 : 28 }} className="up-grid">
           {/* Batch Editing */}
           <div style={{
             background: isDark ? 'linear-gradient(135deg,rgba(255,107,53,.08),rgba(233,30,140,.05))' : '#ffffff',

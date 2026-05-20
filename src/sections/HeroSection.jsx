@@ -101,8 +101,8 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Right: floating product cards — varied sizes & positions */}
-        <div className="hr" style={{ flex: 1, position: 'relative', minHeight: 560 }}>
+        {/* Right: floating product cards — hidden on mobile to keep hero clean */}
+        <div className="hr" style={{ flex: 1, position: 'relative', minHeight: 560, display: mob ? 'none' : undefined }}>
 
           {/* Card 1 — top-left, "Original" badge */}
           <div className="ll-f1" style={{

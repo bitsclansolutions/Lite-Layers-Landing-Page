@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronsLeftRight } from 'lucide-react';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 /**
  * Two modes:
@@ -18,6 +19,7 @@ export default function BeforeAfter({
   beforeLabel = 'Before',
   afterLabel  = 'After',
 }) {
+  const mob      = useIsMobile();
   const [pos, setPos] = useState(45);
   const ref      = useRef(null);
   const dragging = useRef(false);
@@ -46,7 +48,7 @@ export default function BeforeAfter({
       onMouseMove={e => dragging.current && move(e.clientX)}
       onTouchMove={e => move(e.touches[0].clientX)}
       style={{
-        position: 'relative', width: '100%', height: 460, borderRadius: 22,
+        position: 'relative', width: '100%', height: mob ? 260 : 460, borderRadius: 22,
         overflow: 'hidden', cursor: 'ew-resize',
         boxShadow: '0 32px 90px rgba(0,0,0,.55)', userSelect: 'none',
       }}

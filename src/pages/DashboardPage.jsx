@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useIsMobile } from '../hooks/useIsMobile';
 import {
   LayoutDashboard, BarChart2, CreditCard, Settings,
   LogOut, Crown, Zap, RefreshCw, Download, ChevronRight,
@@ -1133,7 +1134,7 @@ function Sidebar({ t, active, onSelect, user, userData, onSignOut, collapsed }) 
 }
 
 /* ─── dashboard header ───────────────────────────────────── */
-function DashboardHeader({ t, active, isDark, toggle }) {
+function DashboardHeader({ t, active, isDark, toggle, isMobile }) {
   const pageTitle = NAV.find(n => n.id === active)?.label ?? 'Dashboard';
 
   const sidebarBg = t.id === 'dark'
@@ -1142,9 +1143,9 @@ function DashboardHeader({ t, active, isDark, toggle }) {
 
   return (
     <header style={{
-      height: 64, flexShrink: 0,
+      height: 56, flexShrink: 0,
       display: 'flex', alignItems: 'center',
-      padding: '0 32px',
+      padding: isMobile ? '0 16px' : '0 32px',
       borderBottom: `1px solid ${t.border}`,
       background: sidebarBg,
       backdropFilter: 'blur(16px)',
@@ -1190,6 +1191,7 @@ const VALID_TABS = ['overview', 'usage', 'billing', 'settings'];
 export default function DashboardPage() {
   const { t, isDark, toggle } = useT();
   const { user, userData, signOut } = useAuth();
+  const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [active, setActiveState]        = useState(() => {
     const tab = searchParams.get('tab');
@@ -1264,43 +1266,48 @@ export default function DashboardPage() {
       background: t.bg, fontFamily: "'Inter',sans-serif",
       position: 'relative',
     }}>
-      <Sidebar
-        t={t}
-        active={active}
-        onSelect={setActive}
-        user={user}
-        userData={userData}
-        onSignOut={signOut}
-        collapsed={collapsed}
-      />
+      {/* Sidebar — hidden on mobile, replaced by bottom nav */}
+      {!isMobile && (
+        <Sidebar
+          t={t}
+          active={active}
+          onSelect={setActive}
+          user={user}
+          userData={userData}
+          onSignOut={signOut}
+          collapsed={collapsed}
+        />
+      )}
 
-      {/* Floating collapse/expand arrow on the sidebar border */}
-      <button
-        onClick={() => setCollapsed(c => !c)}
-        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        style={{
-          position: 'absolute',
-          top: 20,                          /* (64px header - 24px button) / 2 */
-          left: SIDEBAR_W - 12,             /* centered on the border line */
-          zIndex: 20,
-          width: 24, height: 24,
-          borderRadius: '50%',
-          border: `1px solid ${t.border}`,
-          background: t.id === 'dark' ? '#1a0f2e' : '#ffffff',
-          color: t.textMuted,
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: t.id === 'dark'
-            ? '0 2px 8px rgba(0,0,0,0.5)'
-            : '0 2px 8px rgba(90,50,180,0.15)',
-          transition: 'left .22s ease',
-          padding: 0,
-        }}>
-        {collapsed
-          ? <ChevronRight size={13} strokeWidth={2.5} />
-          : <ChevronLeft  size={13} strokeWidth={2.5} />
-        }
-      </button>
+      {/* Collapse toggle — desktop only */}
+      {!isMobile && (
+        <button
+          onClick={() => setCollapsed(c => !c)}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          style={{
+            position: 'absolute',
+            top: 20,
+            left: SIDEBAR_W - 12,
+            zIndex: 20,
+            width: 24, height: 24,
+            borderRadius: '50%',
+            border: `1px solid ${t.border}`,
+            background: t.id === 'dark' ? '#1a0f2e' : '#ffffff',
+            color: t.textMuted,
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: t.id === 'dark'
+              ? '0 2px 8px rgba(0,0,0,0.5)'
+              : '0 2px 8px rgba(90,50,180,0.15)',
+            transition: 'left .22s ease',
+            padding: 0,
+          }}>
+          {collapsed
+            ? <ChevronRight size={13} strokeWidth={2.5} />
+            : <ChevronLeft  size={13} strokeWidth={2.5} />
+          }
+        </button>
+      )}
 
       {/* Right column: header + scrollable content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
@@ -1309,15 +1316,47 @@ export default function DashboardPage() {
           active={active}
           isDark={isDark}
           toggle={toggle}
+          isMobile={isMobile}
         />
 
-        <main style={{ flex: 1, overflowY: 'auto', padding: '36px 40px' }}>
+        <main style={{
+          flex: 1, overflowY: 'auto',
+          padding: isMobile ? '20px 16px' : '36px 40px',
+          paddingBottom: isMobile ? 76 : undefined,
+        }}>
           {active === 'overview' && <Overview {...viewProps} onNavigate={setActive} onRefresh={() => user && fetchUsage(user.uid)} />}
           {active === 'usage'    && <UsageView {...viewProps} />}
           {active === 'billing'  && <BillingView {...viewProps} />}
           {active === 'settings' && <SettingsView {...viewProps} />}
         </main>
       </div>
+
+      {/* Mobile bottom navigation bar */}
+      {isMobile && (
+        <nav style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0,
+          height: 60, display: 'flex', alignItems: 'stretch',
+          background: t.bgCard, borderTop: `1px solid ${t.border}`,
+          zIndex: 100,
+        }}>
+          {NAV.map(({ id, label, icon: Icon }) => {
+            const isActive = active === id;
+            return (
+              <button key={id} onClick={() => setActive(id)} style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 3,
+                border: 'none', background: 'transparent', cursor: 'pointer',
+                color: isActive ? '#E91E8C' : t.textMuted,
+                fontFamily: "'Inter',sans-serif",
+                transition: 'color .15s',
+              }}>
+                <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+                <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500 }}>{label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }

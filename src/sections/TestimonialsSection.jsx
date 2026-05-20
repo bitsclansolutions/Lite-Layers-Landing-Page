@@ -38,7 +38,7 @@ export default function TestimonialsSection() {
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: mob ? 14 : 24 }} className="c3">
+        <div style={{ display: 'grid', gridTemplateColumns: mob ? '1fr' : 'repeat(3,1fr)', gap: mob ? 14 : 24 }} className="c3">
           {TESTIMONIALS.map((item, i) => (
             <div key={i} style={{
               background: t.stepBg, border: `1px solid ${t.border}`, borderRadius: 22,

@@ -40,7 +40,7 @@ export default function HowItWorksSection() {
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: mob ? 16 : 28 }} className="c3">
+        <div style={{ display: 'grid', gridTemplateColumns: mob ? '1fr' : 'repeat(3,1fr)', gap: mob ? 16 : 28 }} className="c3">
           {STEPS.map((step, i) => (
             <div key={step.n} style={{
               background: t.stepBg, border: `1px solid ${t.border}`, borderRadius: 24,
@@ -57,7 +57,7 @@ export default function HowItWorksSection() {
                 e.currentTarget.style.borderColor = t.border;
                 e.currentTarget.style.transform = 'translateY(0)';
               }}>
-              {i < 2 && (
+              {i < 2 && !mob && (
                 <div className="mh" style={{
                   position: 'absolute', top: 40, right: -18, zIndex: 2,
                   color: t.textFaint,

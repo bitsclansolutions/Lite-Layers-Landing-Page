@@ -22,7 +22,7 @@ export default function StatsSection() {
     }}>
       <div style={{
         maxWidth: 1000, margin: '0 auto', display: 'grid',
-        gridTemplateColumns: 'repeat(4,1fr)', gap: mob ? 20 : 32,
+        gridTemplateColumns: mob ? 'repeat(2,1fr)' : 'repeat(4,1fr)', gap: mob ? 20 : 32,
       }} className="s4">
         {STATS.map(({ num, label, Icon }) => (
           <div key={label} style={{ textAlign: 'center' }}>
