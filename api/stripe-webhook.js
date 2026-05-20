@@ -30,6 +30,11 @@ async function rawBody(req) {
 async function syncSubscription(sub) {
   const uid = sub.metadata?.firebaseUID;
   if (!uid) return;
+
+  // incomplete is transient — payment hasn't cleared yet.
+  // customer.subscription.updated will fire once it becomes active.
+  if (sub.status === 'incomplete') return;
+
   const priceId = sub.items.data[0]?.price.id;
 
   const hasAccess = ['active', 'trialing', 'past_due'].includes(sub.status);
