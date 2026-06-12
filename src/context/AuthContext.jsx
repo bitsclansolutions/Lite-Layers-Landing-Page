@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../firebase';
 
 const AuthCtx = createContext(null);
@@ -20,39 +20,59 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let unsubSnap = null;
 
-    const unsubAuth = onAuthStateChanged(auth, (fbUser) => {
+    const unsubAuth = onAuthStateChanged(auth, async (fbUser) => {
+      // Cancel any previous real-time listener
       if (unsubSnap) { unsubSnap(); unsubSnap = null; }
+
       setUser(fbUser);
+      setUserData(null); // always clear stale data on auth change
 
       if (fbUser) {
         const ref = doc(db, 'users', fbUser.uid);
-        unsubSnap = onSnapshot(ref, async (snap) => {
+
+        // Force a direct server read — bypasses IndexedDB cache completely.
+        // This guarantees the role field is up-to-date before any routing decision.
+        try {
+          const snap = await getDocFromServer(ref);
           if (snap.exists()) {
             setUserData(snap.data());
           } else {
             const newDoc = {
-              email: fbUser.email,
-              displayName: fbUser.displayName || '',
-              photoURL: fbUser.photoURL || null,
-              plan: 'free',
-              role: null,
-              stripeCustomerId: null,
+              email:                fbUser.email,
+              displayName:          fbUser.displayName || '',
+              photoURL:             fbUser.photoURL || null,
+              plan:                 'free',
+              role:                 null,
+              stripeCustomerId:     null,
               stripeSubscriptionId: null,
-              subscriptionStatus: null,
-              currentPeriodEnd: null,
-              cancelAtPeriodEnd: false,
-              usagePeriodStart: null,
-              createdAt: serverTimestamp(),
+              subscriptionStatus:   null,
+              currentPeriodEnd:     null,
+              cancelAtPeriodEnd:    false,
+              usagePeriodStart:     null,
+              createdAt:            serverTimestamp(),
             };
-            try { await setDoc(ref, newDoc); } catch { /* rules may block — setDoc fires another snapshot */ }
+            await setDoc(ref, newDoc);
+            setUserData({ ...newDoc, createdAt: null });
           }
-          setLoading(false);
-        }, (err) => {
-          // Firestore read failed (e.g. security rules not yet deployed) — unblock the app
-          console.error('Firestore user snapshot error:', err.code);
-          setUserData(null);
-          setLoading(false);
-        });
+        } catch (e) {
+          console.error('[auth] user doc read failed:', e.code);
+          // leave userData null — routes will wait or show login
+        }
+
+        setLoading(false);
+
+        // Keep a real-time listener for plan / subscription changes after login.
+        // Skip cache responses so a stale snapshot never overwrites fresh server data.
+        unsubSnap = onSnapshot(
+          ref,
+          { includeMetadataChanges: true },
+          (snap) => {
+            if (!snap.metadata.fromCache && snap.exists()) {
+              setUserData(snap.data());
+            }
+          },
+          (err) => console.error('[auth] snapshot error:', err.code),
+        );
       } else {
         setUserData(null);
         setLoading(false);
