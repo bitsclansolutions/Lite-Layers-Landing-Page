@@ -44,8 +44,13 @@ export function AuthProvider({ children }) {
               usagePeriodStart: null,
               createdAt: serverTimestamp(),
             };
-            await setDoc(ref, newDoc);
+            try { await setDoc(ref, newDoc); } catch { /* rules may block — setDoc fires another snapshot */ }
           }
+          setLoading(false);
+        }, (err) => {
+          // Firestore read failed (e.g. security rules not yet deployed) — unblock the app
+          console.error('Firestore user snapshot error:', err.code);
+          setUserData(null);
           setLoading(false);
         });
       } else {
