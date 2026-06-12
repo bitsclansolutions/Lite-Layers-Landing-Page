@@ -11,7 +11,9 @@ import TermsPage          from './pages/TermsPage';
 import LoginPage          from './pages/LoginPage';
 import PricingPage        from './pages/PricingPage';
 import DashboardPage      from './pages/DashboardPage';
+import AdminPage          from './pages/AdminPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import AdminRoute         from './components/AdminRoute';
 
 export default function App() {
   useGlobalStyles();
@@ -39,6 +41,9 @@ export default function App() {
               <Route path="/success"        element={<PaymentSuccessPage />} />
               <Route path="/dashboard"      element={
                 <ProtectedRoute><DashboardPage /></ProtectedRoute>
+              } />
+              <Route path="/admin"          element={
+                <AdminRoute><AdminPage /></AdminRoute>
               } />
             </Routes>
           </div>

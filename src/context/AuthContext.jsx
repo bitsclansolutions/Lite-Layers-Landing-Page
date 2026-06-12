@@ -35,6 +35,7 @@ export function AuthProvider({ children }) {
               displayName: fbUser.displayName || '',
               photoURL: fbUser.photoURL || null,
               plan: 'free',
+              role: null,
               stripeCustomerId: null,
               stripeSubscriptionId: null,
               subscriptionStatus: null,
@@ -61,6 +62,7 @@ export function AuthProvider({ children }) {
       user,
       userData,
       loading,
+      isAdmin: userData?.role === 'admin',
       signInWithEmail:  (e, p) => signInWithEmailAndPassword(auth, e, p),
       signUpWithEmail:  async (e, p, name) => {
         const cred = await createUserWithEmailAndPassword(auth, e, p);

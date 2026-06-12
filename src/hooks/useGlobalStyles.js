@@ -20,6 +20,7 @@ export function useGlobalStyles() {
       @keyframes floatB { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-12px)} }
       @keyframes gradS  { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
       @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.35} }
+      @keyframes spin   { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
       .ll-f1{animation:float  5s   ease-in-out infinite;}
       .ll-f2{animation:floatB 6s   ease-in-out infinite 1.6s;}

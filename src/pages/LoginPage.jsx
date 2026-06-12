@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -16,17 +16,26 @@ const INPUT = (t) => ({
 export default function LoginPage() {
   const { t } = useT();
   const mob = useIsMobile();
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, user, userData } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = '/dashboard';
 
-  const [tab, setTab]       = useState('login');
-  const [email, setEmail]   = useState('');
-  const [pass, setPass]     = useState('');
-  const [name, setName]     = useState('');
-  const [error, setError]   = useState('');
-  const [busy, setBusy]     = useState(false);
+  const [tab, setTab]                 = useState('login');
+  const [email, setEmail]             = useState('');
+  const [pass, setPass]               = useState('');
+  const [name, setName]               = useState('');
+  const [error, setError]             = useState('');
+  const [busy, setBusy]               = useState(false);
+  const [awaitingRedirect, setAwaitingRedirect] = useState(false);
+
+  // Once we've signed in and userData has loaded from Firestore, redirect based on role.
+  useEffect(() => {
+    if (!awaitingRedirect || !user || userData === null) return;
+    const dest = userData.role === 'admin'
+      ? '/admin'
+      : (location.state?.from || '/dashboard');
+    navigate(dest, { replace: true });
+  }, [awaitingRedirect, user, userData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,10 +47,9 @@ export default function LoginPage() {
       } else {
         await signUpWithEmail(email, pass, name);
       }
-      navigate(from, { replace: true });
+      setAwaitingRedirect(true);
     } catch (err) {
       setError(friendlyError(err.code));
-    } finally {
       setBusy(false);
     }
   };
@@ -51,10 +59,9 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await signInWithGoogle();
-      navigate(from, { replace: true });
+      setAwaitingRedirect(true);
     } catch (err) {
       setError(friendlyError(err.code));
-    } finally {
       setBusy(false);
     }
   };

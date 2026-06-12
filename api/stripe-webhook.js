@@ -13,6 +13,19 @@ if (!getApps().length) {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const db = getFirestore();
 
+async function logEvent(uid, email, eventType, plan, status) {
+  try {
+    await db.collection('subscription_events').add({
+      uid: uid ?? null,
+      email: email ?? null,
+      eventType,
+      plan: plan ?? null,
+      status: status ?? null,
+      timestamp: Timestamp.now(),
+    });
+  } catch { /* non-fatal */ }
+}
+
 const PLAN_BY_PRICE = {
   [process.env.STRIPE_PRO_PRICE_ID]:      'pro',
   [process.env.STRIPE_BUSINESS_PRICE_ID]: 'business',
@@ -74,18 +87,26 @@ export default async function handler(req, res) {
 
   switch (event.type) {
     case 'customer.subscription.created':
-    case 'customer.subscription.updated':
-      await syncSubscription(event.data.object);
+    case 'customer.subscription.updated': {
+      const sub = event.data.object;
+      await syncSubscription(sub);
+      const uid = sub.metadata?.firebaseUID;
+      const priceId = sub.items.data[0]?.price.id;
+      const plan = PLAN_BY_PRICE[priceId] || 'free';
+      if (uid) await logEvent(uid, null, event.type, plan, sub.status);
       break;
+    }
 
     case 'customer.subscription.deleted': {
-      const uid = event.data.object.metadata?.firebaseUID;
+      const sub = event.data.object;
+      const uid = sub.metadata?.firebaseUID;
       if (uid) {
         await db.collection('users').doc(uid).update({
           plan: 'free', stripeSubscriptionId: null,
           subscriptionStatus: 'canceled', currentPeriodEnd: null,
           cancelAtPeriodEnd: false,
         });
+        await logEvent(uid, null, 'subscription.deleted', 'free', 'canceled');
       }
       break;
     }
@@ -93,7 +114,11 @@ export default async function handler(req, res) {
     case 'invoice.payment_failed': {
       const cid  = event.data.object.customer;
       const snap = await db.collection('users').where('stripeCustomerId', '==', cid).limit(1).get();
-      if (!snap.empty) await snap.docs[0].ref.update({ subscriptionStatus: 'past_due' });
+      if (!snap.empty) {
+        const userDoc = snap.docs[0];
+        await userDoc.ref.update({ subscriptionStatus: 'past_due' });
+        await logEvent(userDoc.id, userDoc.data().email, 'payment.failed', userDoc.data().plan, 'past_due');
+      }
       break;
     }
 
@@ -107,6 +132,10 @@ export default async function handler(req, res) {
       if (!subId) break;
       const sub = await stripe.subscriptions.retrieve(subId);
       await syncSubscription(sub);
+      const uid = sub.metadata?.firebaseUID;
+      const priceId = sub.items.data[0]?.price.id;
+      const plan = PLAN_BY_PRICE[priceId] || 'free';
+      if (uid) await logEvent(uid, null, 'payment.recovered', plan, 'active');
       break;
     }
   }
