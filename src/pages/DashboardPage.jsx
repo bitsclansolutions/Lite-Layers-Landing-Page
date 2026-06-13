@@ -1351,8 +1351,13 @@ export default function DashboardPage() {
   const [menuOpen, setMenuOpen]     = useState(false);
   const [loadingUsage, setLoadingUsage] = useState(false);
   const [usageError, setUsageError]     = useState('');
+  // Track which tabs have been visited so we can keep them mounted (cache)
+  const visited = useRef(new Set([
+    VALID_TABS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'overview',
+  ]));
 
   const setActive = (tab) => {
+    visited.current.add(tab);
     setActiveState(tab);
     setSearchParams(tab === 'overview' ? {} : { tab });
     setMenuOpen(false);
@@ -1475,10 +1480,26 @@ export default function DashboardPage() {
           flex: 1, overflowY: 'auto',
           padding: isMobile ? '20px 16px' : '36px 40px',
         }}>
-          {active === 'overview' && <Overview {...viewProps} onNavigate={setActive} onRefresh={() => user && fetchUsage(user.uid)} />}
-          {active === 'usage'    && <UsageView {...viewProps} />}
-          {active === 'billing'  && <BillingView {...viewProps} />}
-          {active === 'settings' && <SettingsView {...viewProps} />}
+          {visited.current.has('overview') && (
+            <div style={{ display: active === 'overview' ? 'block' : 'none' }}>
+              <Overview {...viewProps} onNavigate={setActive} onRefresh={() => user && fetchUsage(user.uid)} />
+            </div>
+          )}
+          {visited.current.has('usage') && (
+            <div style={{ display: active === 'usage' ? 'block' : 'none' }}>
+              <UsageView {...viewProps} />
+            </div>
+          )}
+          {visited.current.has('billing') && (
+            <div style={{ display: active === 'billing' ? 'block' : 'none' }}>
+              <BillingView {...viewProps} />
+            </div>
+          )}
+          {visited.current.has('settings') && (
+            <div style={{ display: active === 'settings' ? 'block' : 'none' }}>
+              <SettingsView {...viewProps} />
+            </div>
+          )}
         </main>
       </div>
 

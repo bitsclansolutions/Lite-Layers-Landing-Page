@@ -1749,8 +1749,13 @@ export default function AdminPage() {
   });
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen,  setMenuOpen]  = useState(false);
+  // Track which tabs have been visited so we can keep them mounted (cache)
+  const visited = useRef(new Set([
+    VALID_TABS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'overview',
+  ]));
 
   const setActive = (tab) => {
+    visited.current.add(tab);
     setActiveState(tab);
     setSearchParams(tab === 'overview' ? {} : { tab });
     setMenuOpen(false);
@@ -1794,12 +1799,36 @@ export default function AdminPage() {
           isMobile={isMobile} menuOpen={menuOpen} onMenuToggle={() => setMenuOpen(o => !o)}
         />
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '20px 16px' : '36px 40px' }}>
-          {active === 'overview'  && <AdminOverview  t={t} />}
-          {active === 'users'     && <AdminUsers     t={t} />}
-          {active === 'scenes'      && <AdminScenes      t={t} user={user} onTabChange={setActive} />}
-          {active === 'categories'  && <AdminCategories  t={t} />}
-          {active === 'revenue'     && <AdminRevenue     t={t} />}
-          {active === 'settings'  && <AdminSettings  t={t} user={user} userData={userData} />}
+          {visited.current.has('overview') && (
+            <div style={{ display: active === 'overview' ? 'block' : 'none' }}>
+              <AdminOverview t={t} />
+            </div>
+          )}
+          {visited.current.has('users') && (
+            <div style={{ display: active === 'users' ? 'block' : 'none' }}>
+              <AdminUsers t={t} />
+            </div>
+          )}
+          {visited.current.has('scenes') && (
+            <div style={{ display: active === 'scenes' ? 'block' : 'none' }}>
+              <AdminScenes t={t} user={user} onTabChange={setActive} />
+            </div>
+          )}
+          {visited.current.has('categories') && (
+            <div style={{ display: active === 'categories' ? 'block' : 'none' }}>
+              <AdminCategories t={t} />
+            </div>
+          )}
+          {visited.current.has('revenue') && (
+            <div style={{ display: active === 'revenue' ? 'block' : 'none' }}>
+              <AdminRevenue t={t} />
+            </div>
+          )}
+          {visited.current.has('settings') && (
+            <div style={{ display: active === 'settings' ? 'block' : 'none' }}>
+              <AdminSettings t={t} user={user} userData={userData} />
+            </div>
+          )}
         </main>
       </div>
 
