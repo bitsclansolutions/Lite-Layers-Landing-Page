@@ -310,8 +310,8 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
       </div>
 
       {/* Quick usage grid */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+      <div className="c4" style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
         gap: 16, marginBottom: 24,
       }}>
         {quickStats.map(({ icon: Icon, label, key }) => {

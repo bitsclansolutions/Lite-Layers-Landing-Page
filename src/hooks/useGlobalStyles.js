@@ -47,7 +47,7 @@ export function useGlobalStyles() {
         .hr{display:none!important;}
       }
       @media(max-width:540px){
-        .c4{grid-template-columns:1fr!important;}
+        .c4{grid-template-columns:repeat(2,1fr)!important;}
         .s4{grid-template-columns:repeat(2,1fr)!important;}
       }
       @media(max-width:720px){
