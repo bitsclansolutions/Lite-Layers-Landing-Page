@@ -470,10 +470,11 @@ function BillingView({ t, userData, user }) {
     setError('');
     setLoadingPlan(p.id);
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: p.id, userId: user.uid, userEmail: user.email }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ plan: p.id }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Server error');
@@ -488,10 +489,11 @@ function BillingView({ t, userData, user }) {
     if (!userData?.stripeCustomerId) return;
     setPortalBusy(true);
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/create-portal-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: userData.stripeCustomerId }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error('Server error');
       const { url } = await res.json();

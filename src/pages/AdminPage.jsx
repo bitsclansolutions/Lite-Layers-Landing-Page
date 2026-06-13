@@ -264,6 +264,7 @@ function AdminOverview({ t }) {
 const PLAN_LABELS = { free: 'Free', pro: 'Pro', business: 'Business' };
 
 function AdminUsers({ t }) {
+  const isMobile = useIsMobile();
   const [users, setUsers]             = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState('');
@@ -340,7 +341,7 @@ function AdminUsers({ t }) {
         {/* Main row */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '2.5fr 1fr 1fr 1fr auto',
+          gridTemplateColumns: isMobile ? '1fr 1fr auto' : '2.5fr 1fr 1fr 1fr auto',
           gap: 12, alignItems: 'center',
           padding: '14px 20px',
           borderBottom: `1px solid ${t.border}`,
@@ -372,10 +373,10 @@ function AdminUsers({ t }) {
           </div>
           {/* Plan */}
           <div><PlanBadge plan={u.plan} /></div>
-          {/* Status */}
-          <div>{u.subscriptionStatus ? <StatusBadge status={u.subscriptionStatus} /> : <span style={{ fontSize: 12, color: t.textFaint }}>—</span>}</div>
-          {/* Joined */}
-          <div style={{ fontSize: 12, color: t.textMuted }}>{joined}</div>
+          {/* Status — hidden on mobile (shown in expanded detail) */}
+          {!isMobile && <div>{u.subscriptionStatus ? <StatusBadge status={u.subscriptionStatus} /> : <span style={{ fontSize: 12, color: t.textFaint }}>—</span>}</div>}
+          {/* Joined — hidden on mobile */}
+          {!isMobile && <div style={{ fontSize: 12, color: t.textMuted }}>{joined}</div>}
           {/* Expand caret */}
           <div style={{ color: t.textMuted }}>
             {isExpanded ? <ChevronLeft size={16} style={{ transform: 'rotate(-90deg)' }} /> : <ChevronRight size={16} style={{ transform: 'rotate(90deg)' }} />}
@@ -509,12 +510,13 @@ function AdminUsers({ t }) {
       <div style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 16, overflow: 'hidden' }}>
         {/* Table header */}
         <div style={{
-          display: 'grid', gridTemplateColumns: '2.5fr 1fr 1fr 1fr auto',
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr 1fr auto' : '2.5fr 1fr 1fr 1fr auto',
           gap: 12, padding: '10px 20px',
           background: t.id === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(120,80,200,0.04)',
           borderBottom: `1px solid ${t.border}`,
         }}>
-          {['User', 'Plan', 'Status', 'Joined', ''].map((h, i) => (
+          {(isMobile ? ['User', 'Plan', ''] : ['User', 'Plan', 'Status', 'Joined', '']).map((h, i) => (
             <div key={i} style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '.5px' }}>
               {h}
             </div>
@@ -1630,8 +1632,6 @@ function AdminSidebar({ t, active, onSelect, user, userData, onSignOut, collapse
           );
         })}
 
-        {/* Divider */}
-        <div style={{ height: 1, background: t.border, margin: '8px 0' }} />
       </nav>
 
       {/* User + sign out */}

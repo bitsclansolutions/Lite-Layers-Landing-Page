@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { verifyToken } from './_verify-token.js';
 
 if (!getApps().length) {
   const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -19,13 +20,20 @@ const PRICE_IDS = {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { plan, userId, userEmail } = req.body;
+  const uid = await verifyToken(req.headers.authorization);
+  if (!uid) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { plan } = req.body;
 
   if (!PRICE_IDS[plan]) return res.status(400).json({ error: 'Invalid plan' });
 
+  const userId = uid;
+
   const userRef  = db.collection('users').doc(userId);
   const userSnap = await userRef.get();
+  if (!userSnap.exists) return res.status(404).json({ error: 'User not found' });
   let customerId = userSnap.data()?.stripeCustomerId ?? null;
+  const userEmail = userSnap.data()?.email ?? '';
 
   const createCustomer = async () => {
     const customer = await stripe.customers.create({

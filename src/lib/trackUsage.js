@@ -4,26 +4,20 @@
  * Call this BEFORE executing the operation. If `allowed` is false the user
  * has hit their plan limit — show an upgrade prompt instead of running the op.
  *
- * @param {string} userId  - Firebase UID
+ * @param {import('firebase/auth').User} firebaseUser - Firebase auth user object
  * @param {string} feature - 'bgRemovals' | 'sceneGenerations' | 'resizes' | 'exports'
  * @param {number} amount  - Units to consume (default 1)
  * @returns {Promise<{ allowed: boolean, used: number, limit: number, remaining: number }>}
- *
- * Usage example:
- *   import { trackUsage } from '../lib/trackUsage';
- *
- *   const result = await trackUsage(user.uid, 'bgRemovals');
- *   if (!result.allowed) {
- *     alert(`Limit reached (${result.used}/${result.limit}). Upgrade to continue.`);
- *     return;
- *   }
- *   // ... proceed with background removal
  */
-export async function trackUsage(userId, feature, amount = 1) {
+export async function trackUsage(firebaseUser, feature, amount = 1) {
+  const token = await firebaseUser.getIdToken();
   const res = await fetch('/api/track-usage', {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ userId, feature, amount }),
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ feature, amount }),
   });
 
   if (!res.ok) {

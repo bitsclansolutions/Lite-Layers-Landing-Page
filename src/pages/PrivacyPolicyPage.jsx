@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
   return (
     <>
       <Navbar />
-      <main style={{ background: t.bg, minHeight: '100vh', paddingTop: 100 }}>
+      <main style={{ background: t.bg, minHeight: '100vh', paddingTop: mob ? 80 : 100 }}>
         <div style={{ maxWidth: 760, margin: '0 auto', padding: mob ? '40px 20px 80px' : '60px 48px 100px' }}>
 
           {/* Back link */}

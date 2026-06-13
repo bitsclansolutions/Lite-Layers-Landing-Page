@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { verifyToken } from './_verify-token.js';
 
 if (!getApps().length) {
   const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -28,10 +29,14 @@ function periodKey(userData) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { userId, feature, amount = 1 } = req.body ?? {};
+  const uid = await verifyToken(req.headers.authorization);
+  if (!uid) return res.status(401).json({ error: 'Unauthorized' });
 
-  if (!userId || !feature) {
-    return res.status(400).json({ error: 'userId and feature are required' });
+  const { feature, amount = 1 } = req.body ?? {};
+  const userId = uid;
+
+  if (!feature) {
+    return res.status(400).json({ error: 'feature is required' });
   }
   if (!VALID_FEATURES.includes(feature)) {
     return res.status(400).json({ error: `Invalid feature. Must be one of: ${VALID_FEATURES.join(', ')}` });
