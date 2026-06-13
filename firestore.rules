@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthed() && request.auth.uid == userId;
+    }
+
+    // Reads the caller's Firestore doc to confirm role === 'admin'.
+    // Firebase Admin SDK (server) bypasses these rules entirely.
+    function isAdmin() {
+      return isAuthed() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── user documents ──────────────────────────────────────────
+    match /users/{userId} {
+      // Only the account owner can read their own document
+      allow read: if isOwner(userId);
+
+      // New registration: client may create own doc but cannot self-assign role
+      allow create: if isOwner(userId)
+                    && request.resource.data.role == null;
+
+      // Profile updates (e.g. photoURL): owner only, role field must not change
+      allow update: if isOwner(userId)
+                    && request.resource.data.role == resource.data.role;
+
+      // Deletion is handled server-side via Firebase Admin SDK
+      allow delete: if false;
+
+      // Usage sub-collection: owner reads, server-only writes (track-usage API)
+      match /usage/{periodKey} {
+        allow read:  if isOwner(userId);
+        allow write: if false;
+      }
+    }
+
+    // ── scene presets ───────────────────────────────────────────
+    // Any authenticated user may browse scenes; only admins may modify them
+    match /preset_scenes/{sceneId} {
+      allow read:  if isAuthed();
+      allow write: if isAdmin();
+    }
+
+    // ── scene categories ────────────────────────────────────────
+    match /scene_categories/{catId} {
+      allow read:  if isAuthed();
+      allow write: if isAdmin();
+    }
+
+    // ── subscription event log ──────────────────────────────────
+    // Written by the Stripe webhook (Admin SDK); admin reads via Admin SDK.
+    // No client access needed.
+    match /subscription_events/{eventId} {
+      allow read, write: if false;
+    }
+
+    // ── deny everything else ────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
