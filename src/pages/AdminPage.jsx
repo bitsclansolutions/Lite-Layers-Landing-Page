@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
+import Logo from '../components/Logo';
 import {
   LayoutDashboard, Users, ImageIcon, DollarSign, LogOut,
   ChevronLeft, ChevronRight, Menu, X, Moon, Sun, Crown, Zap,
@@ -1581,13 +1582,7 @@ function AdminSidebar({ t, active, onSelect, user, userData, onSignOut, collapse
         borderBottom: `1px solid ${t.border}`,
         height: 64, flexShrink: 0, gap: 10,
       }}>
-        <div style={{
-          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-          background: 'linear-gradient(135deg,#E91E8C,#7B2FBE)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Shield size={14} color="#fff" />
-        </div>
+        <Logo size={28} />
         {!collapsed && (
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-.3px', color: t.text, lineHeight: 1.1 }}>
