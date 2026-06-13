@@ -240,7 +240,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
   return (
     <div>
       <h1 style={{ fontSize: 26, fontWeight: 800, color: t.text, marginBottom: 4 }}>
-        Welcome back{user?.displayName ? `, ${user.displayName.split(' ')[0]}` : ''}
+        Welcome back{user?.displayName ? `, ${user.displayName}` : ''}
       </h1>
       <p style={{ color: t.textMuted, fontSize: 14, marginBottom: 32 }}>
         Here's a summary of your account.
