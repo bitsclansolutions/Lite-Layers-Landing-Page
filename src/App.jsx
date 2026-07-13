@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage        from './pages/LandingPage';
 import PrivacyPolicyPage  from './pages/PrivacyPolicyPage';
 import TermsPage          from './pages/TermsPage';
+import AccountDeletionPage from './pages/AccountDeletionPage';
 import LoginPage          from './pages/LoginPage';
 import PricingPage        from './pages/PricingPage';
 import DashboardPage      from './pages/DashboardPage';
@@ -37,6 +38,7 @@ export default function App() {
               <Route path="/"               element={<LandingPage />}        />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />}  />
               <Route path="/terms"          element={<TermsPage />}          />
+              <Route path="/account-deletion" element={<AccountDeletionPage />} />
               <Route path="/login"          element={<LoginPage />}          />
               <Route path="/pricing"        element={<PricingPage />}        />
               <Route path="/success"        element={<PaymentSuccessPage />} />

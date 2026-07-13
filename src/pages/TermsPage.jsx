@@ -77,27 +77,23 @@ export default function TermsPage() {
             <P>AI-generated outputs produced using your uploaded images are owned by you, subject to any applicable third-party AI model licenses.</P>
           </Section>
 
-          <Section title="6. In-App Purchases & Subscriptions">
-            <P>Some features of the App may require in-app purchases or a subscription. All purchases are final and non-refundable except as required by applicable law. Subscription plans will auto-renew unless cancelled at least 24 hours before the end of the current billing period.</P>
-          </Section>
-
-          <Section title="7. Disclaimer of Warranties">
+          <Section title="6. Disclaimer of Warranties">
             <P>The App is provided on an "as is" and "as available" basis without warranties of any kind, either express or implied. We do not warrant that the App will be uninterrupted, error-free, or that any defects will be corrected.</P>
           </Section>
 
-          <Section title="8. Limitation of Liability">
+          <Section title="7. Limitation of Liability">
             <P>To the maximum extent permitted by applicable law, Lite Layers shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of, or inability to use, the App.</P>
           </Section>
 
-          <Section title="9. Governing Law">
+          <Section title="8. Governing Law">
             <P>These Terms shall be governed by and construed in accordance with applicable laws, without regard to conflict of law provisions. Any disputes arising from these Terms shall be resolved through binding arbitration.</P>
           </Section>
 
-          <Section title="10. Changes to Terms">
+          <Section title="9. Changes to Terms">
             <P>We reserve the right to update these Terms at any time. Continued use of the App after changes are posted constitutes your acceptance of the revised Terms.</P>
           </Section>
 
-          <Section title="11. Contact Us">
+          <Section title="10. Contact Us">
             <P>If you have any questions about these Terms, please contact us at:</P>
             <div style={{
               background: t.bgAlt, border: `1px solid ${t.border}`, borderRadius: 16,

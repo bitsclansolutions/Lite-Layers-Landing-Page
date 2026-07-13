@@ -7,7 +7,6 @@ import ShowcaseSection     from '../sections/ShowcaseSection';
 import ScenesSection       from '../sections/ScenesSection';
 import ComingSoonSection   from '../sections/ComingSoonSection';
 import TestimonialsSection from '../sections/TestimonialsSection';
-import PricingSection      from '../sections/PricingSection';
 import DownloadSection     from '../sections/DownloadSection';
 import FooterSection       from '../sections/FooterSection';
 
@@ -23,7 +22,6 @@ export default function LandingPage() {
       <ScenesSection />
       <ComingSoonSection />
       <TestimonialsSection />
-      <PricingSection />
       <DownloadSection />
       <FooterSection />
     </>
