@@ -5,6 +5,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import Logo from '../components/Logo';
 
 const ROUTE_LINKS = {
+  // 'Pricing':          '#pricing',
   'Privacy Policy':   '/privacy-policy',
   'Terms of Service': '/terms',
   'Delete Account':   '/account-deletion',
@@ -12,7 +13,7 @@ const ROUTE_LINKS = {
 
 const LINK_GROUPS = [
   { title: 'Features', links: ['AI Scene Adding', 'Background Removal', 'Smart Resize', 'Batch Editing *', 'Virtual Try-On *'] },
-  { title: 'Company',  links: ['About', 'Blog', 'Press Kit'] },
+  { title: 'Company',  links: ['About', 'Blog', /* 'Pricing', */ 'Press Kit'] },
   { title: 'Support',  links: ['Help Center', 'Contact Us', 'Privacy Policy', 'Terms of Service', 'Delete Account'] },
 ];
 

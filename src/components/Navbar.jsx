@@ -11,6 +11,7 @@ const NAV_LINKS = [
   ['Features',    '#features'   ],
   ['Scenes',      '#scenes'     ],
   ['Coming Soon', '#coming-soon'],
+  // ['Pricing',     '#pricing'    ],
   ['Contact',     '#contact'    ],
 ];
 
