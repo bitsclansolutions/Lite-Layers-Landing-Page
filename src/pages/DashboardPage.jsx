@@ -43,6 +43,26 @@ function statusLabel(status, cancelAtPeriodEnd) {
   return map[status] || status;
 }
 
+// Client-side safety net: if the billing period has already ended but Firestore
+// hasn't caught up yet (e.g. webhook delay before the daily cron catches it),
+// treat the plan as expired everywhere it's read, not just on some tabs.
+function effectivePlanState(userData) {
+  const rawPlan = userData?.plan || 'free';
+  const rawStatus = userData?.subscriptionStatus;
+  const periodEndMs = userData?.currentPeriodEnd?.seconds
+    ? userData.currentPeriodEnd.seconds * 1000
+    : null;
+  const periodExpired = periodEndMs !== null && Date.now() >= periodEndMs;
+  const expiredOverride = rawPlan !== 'free' && periodExpired && (userData?.cancelAtPeriodEnd ?? false);
+  const plan = expiredOverride ? 'free' : rawPlan;
+  const status = expiredOverride ? undefined : rawStatus;
+  const cancelAtPeriodEnd = (userData?.cancelAtPeriodEnd ?? false) && status === 'active' && plan !== 'free';
+  const periodEnd = periodEndMs && !periodExpired
+    ? new Date(periodEndMs).toLocaleDateString()
+    : null;
+  return { plan, status, cancelAtPeriodEnd, periodEnd };
+}
+
 const NAV = [
   { id: 'overview',  label: 'Overview',    icon: LayoutDashboard },
   { id: 'usage',     label: 'Usage',       icon: BarChart2       },
@@ -216,29 +236,13 @@ function UsageError({ t, error, onRefresh }) {
 }
 
 function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageError, onNavigate, onRefresh }) {
-  const rawPlan = userData?.plan || 'free';
-  const rawStatus = userData?.subscriptionStatus;
-  const periodEndMs = userData?.currentPeriodEnd?.seconds
-    ? userData.currentPeriodEnd.seconds * 1000
-    : null;
-  // Client-side safety net: if the billing period has already ended but Firestore
-  // hasn't caught up yet (e.g. webhook delay), stop showing the stale cancellation
-  // notice and fall back to Free instead of a past due date.
-  const periodExpired = periodEndMs !== null && Date.now() >= periodEndMs;
-  const expiredOverride = rawPlan !== 'free' && periodExpired && (userData?.cancelAtPeriodEnd ?? false);
-  const plan = expiredOverride ? 'free' : rawPlan;
-  const status = expiredOverride ? undefined : rawStatus;
+  const { plan, status, cancelAtPeriodEnd, periodEnd } = effectivePlanState(userData);
   const meta = PLAN_META[plan];
   const limits = LIMITS[plan];
   const PlanIcon = meta.icon;
-  const cancelAtPeriodEnd = (userData?.cancelAtPeriodEnd ?? false)
-    && status === 'active' && plan !== 'free';
   const statusStyle = cancelAtPeriodEnd
     ? { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' }
     : STATUS_COLORS[status] || null;
-  const periodEnd = periodEndMs && !periodExpired
-    ? new Date(periodEndMs).toLocaleDateString()
-    : null;
 
   const quickStats = [
     { icon: BarChart2, label: 'BG Removals',  key: 'bgRemovals'      },
@@ -377,7 +381,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
 }
 
 function UsageView({ t, usage, userData, loadingUsage, usageError, onRefresh }) {
-  const plan = userData?.plan || 'free';
+  const { plan } = effectivePlanState(userData);
   const limits = LIMITS[plan];
 
   const stats = [
@@ -462,27 +466,9 @@ function BillingView({ t, userData, user }) {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState('');
 
-  const rawPlan           = userData?.plan || 'free';
-  const rawStatus         = userData?.subscriptionStatus;
-  const periodEndMs       = userData?.currentPeriodEnd?.seconds
-    ? userData.currentPeriodEnd.seconds * 1000
-    : null;
-  // Client-side safety net: if the billing period has already ended but Firestore
-  // hasn't caught up yet (e.g. webhook delay), stop showing the stale cancellation
-  // notice and fall back to Free instead of a past due date.
-  const periodExpired     = periodEndMs !== null && Date.now() >= periodEndMs;
-  const expiredOverride   = rawPlan !== 'free' && periodExpired && (userData?.cancelAtPeriodEnd ?? false);
-  const plan              = expiredOverride ? 'free' : rawPlan;
-  const status            = expiredOverride ? undefined : rawStatus;
+  const { plan, status, cancelAtPeriodEnd, periodEnd } = effectivePlanState(userData);
   const meta              = PLAN_META[plan];
   const PlanIcon          = meta.icon;
-  // Only treat as cancelling if subscription is genuinely active — guards against
-  // stale cancelAtPeriodEnd in Firestore when the subscription is already deleted.
-  const cancelAtPeriodEnd = (userData?.cancelAtPeriodEnd ?? false)
-    && status === 'active' && plan !== 'free';
-  const periodEnd         = periodEndMs && !periodExpired
-    ? new Date(periodEndMs).toLocaleDateString()
-    : null;
   const statusStyle = cancelAtPeriodEnd
     ? { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' }
     : STATUS_COLORS[status] || null;
@@ -810,12 +796,8 @@ function SettingsView({ t, user, userData }) {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError,   setDeleteError]   = useState('');
 
-  const plan             = userData?.plan || 'free';
-  const cancelAtPeriodEnd = (userData?.cancelAtPeriodEnd ?? false) && userData?.subscriptionStatus === 'active';
-  const hasActiveSub     = ['active', 'trialing', 'past_due'].includes(userData?.subscriptionStatus) && plan !== 'free';
-  const periodEnd        = userData?.currentPeriodEnd?.seconds
-    ? new Date(userData.currentPeriodEnd.seconds * 1000).toLocaleDateString()
-    : null;
+  const { plan, status, cancelAtPeriodEnd, periodEnd } = effectivePlanState(userData);
+  const hasActiveSub     = ['active', 'trialing', 'past_due'].includes(status) && plan !== 'free';
 
   function deleteWarning() {
     if (hasActiveSub && !cancelAtPeriodEnd) {
