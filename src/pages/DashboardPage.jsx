@@ -46,7 +46,7 @@ function statusLabel(status, cancelAtPeriodEnd) {
 const NAV = [
   { id: 'overview',  label: 'Overview',    icon: LayoutDashboard },
   { id: 'usage',     label: 'Usage',       icon: BarChart2       },
-  { id: 'billing',   label: 'Billing',     icon: CreditCard      },
+  // { id: 'billing',   label: 'Billing',     icon: CreditCard      },
   { id: 'settings',  label: 'Settings',    icon: Settings        },
 ];
 
@@ -284,7 +284,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
               }}>{statusLabel(status, cancelAtPeriodEnd)}</div>
             )}
           </div>
-          <button
+          {/* <button
             onClick={() => onNavigate('billing')}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
@@ -293,7 +293,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
               background: t.outlineBtn, color: t.text, fontFamily: "'Inter',sans-serif",
             }}>
             {plan === 'free' ? 'Upgrade' : 'Manage'} <ChevronRight size={14} />
-          </button>
+          </button> */}
         </div>
 
         {/* Cancellation scheduled notice */}
@@ -307,14 +307,14 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
           </div>
         )}
 
-        {/* Past due notice */}
+        {/* Past due notice — link disabled while Billing tab is hidden */}
         {status === 'past_due' && (
           <div style={{
             marginTop: 16, padding: '10px 14px', borderRadius: 10,
             background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
             fontSize: 13, color: '#f87171',
           }}>
-            Your last payment failed. Go to <strong style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => onNavigate('billing')}>Billing</strong> to fix your payment method.
+            Your last payment failed. Please contact support to fix your payment method.
           </div>
         )}
       </div>
@@ -1354,7 +1354,7 @@ function DashboardHeader({ t, active, isDark, toggle, isMobile, menuOpen, onMenu
 }
 
 /* ─── main ───────────────────────────────────────────────── */
-const VALID_TABS = ['overview', 'usage', 'billing', 'settings'];
+const VALID_TABS = ['overview', 'usage', /* 'billing', */ 'settings'];
 
 export default function DashboardPage() {
   const { t, isDark, toggle } = useT();
@@ -1510,11 +1510,11 @@ export default function DashboardPage() {
               <UsageView {...viewProps} />
             </div>
           )}
-          {visited.current.has('billing') && (
+          {/* {visited.current.has('billing') && (
             <div style={{ display: active === 'billing' ? 'block' : 'none' }}>
               <BillingView {...viewProps} />
             </div>
-          )}
+          )} */}
           {visited.current.has('settings') && (
             <div style={{ display: active === 'settings' ? 'block' : 'none' }}>
               <SettingsView {...viewProps} />
