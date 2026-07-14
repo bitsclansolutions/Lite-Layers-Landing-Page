@@ -258,7 +258,8 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
 
       {usageError && <UsageError t={t} error={usageError} onRefresh={onRefresh} />}
 
-      {/* Plan banner */}
+      {/*
+      Plan banner — hidden alongside Billing tab for now.
       <div style={{
         background: t.bgCard, border: `1.5px solid ${meta.color}44`,
         borderRadius: 16, padding: '24px',
@@ -284,7 +285,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
               }}>{statusLabel(status, cancelAtPeriodEnd)}</div>
             )}
           </div>
-          {/* <button
+          <button
             onClick={() => onNavigate('billing')}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
@@ -293,10 +294,10 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
               background: t.outlineBtn, color: t.text, fontFamily: "'Inter',sans-serif",
             }}>
             {plan === 'free' ? 'Upgrade' : 'Manage'} <ChevronRight size={14} />
-          </button> */}
+          </button>
         </div>
 
-        {/* Cancellation scheduled notice */}
+        Cancellation scheduled notice
         {cancelAtPeriodEnd && periodEnd && (
           <div style={{
             marginTop: 16, padding: '10px 14px', borderRadius: 10,
@@ -307,7 +308,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
           </div>
         )}
 
-        {/* Past due notice — link disabled while Billing tab is hidden */}
+        Past due notice
         {status === 'past_due' && (
           <div style={{
             marginTop: 16, padding: '10px 14px', borderRadius: 10,
@@ -318,6 +319,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
           </div>
         )}
       </div>
+      */}
 
       {/* Quick usage grid */}
       <div className="c4" style={{
