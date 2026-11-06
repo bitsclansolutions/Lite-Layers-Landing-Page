@@ -39,6 +39,11 @@ export function useGlobalStyles() {
 
       ::-webkit-scrollbar{width:5px;}
       ::-webkit-scrollbar-thumb{background:linear-gradient(#E91E8C,#7B2FBE);border-radius:4px;}
+      /* Visible, brand-coloured horizontal scrollbar for image rows */
+      .ll-hscroll { scrollbar-width:thin; scrollbar-color:#E91E8C transparent; }
+      .ll-hscroll::-webkit-scrollbar { height:6px; }
+      .ll-hscroll::-webkit-scrollbar-track { background:rgba(127,127,127,.15); border-radius:4px; }
+      .ll-hscroll::-webkit-scrollbar-thumb { background:linear-gradient(90deg,#E91E8C,#7B2FBE); border-radius:4px; }
 
       @media(max-width:960px){
         .c2{grid-template-columns:1fr!important;}
