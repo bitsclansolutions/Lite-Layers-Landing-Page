@@ -6,7 +6,7 @@ const STEPS = [
   {
     n: '01', Icon: Camera, color: '#FF6B35',
     title: 'Upload Your Product',
-    desc: 'Take a photo of your perfume, cosmetics, or any product. Any background, any lighting — AI handles isolation automatically.',
+    desc: 'Take a photo of your perfume, skincare, cosmetics, or any consumable product. Any background, any lighting — AI handles isolation automatically.',
   },
   {
     n: '02', Icon: Layers, color: '#E91E8C',

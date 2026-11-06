@@ -36,7 +36,7 @@ export default function DownloadSection() {
             Start Creating for <span className="gt">Free Today</span>
           </h2>
           <p style={{ fontSize: mob ? 16 : 20, color: t.textSub, marginBottom: 40, lineHeight: 1.75 }}>
-            Download Lite Layers and transform your first product photo in under 60 seconds.
+            Download Lite Layers and transform your first consumable product photo in under 60 seconds.
           </p>
           <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="llb gb" style={{
             padding: mob ? '15px 32px' : '18px 44px', fontSize: mob ? 16 : 18,

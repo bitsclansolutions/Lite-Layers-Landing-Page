@@ -60,7 +60,7 @@ export default function FooterSection() {
               </span>
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.85, color: t.textMuted, maxWidth: 260 }}>
-              AI-powered product photography for modern ecommerce sellers. Studio-quality visuals from your phone.
+              AI-powered photography for consumable product brands and ecommerce sellers. Studio-quality visuals from your phone.
             </p>
           </div>
 

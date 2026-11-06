@@ -6,10 +6,10 @@ const SHOTS = [
   { src: IMG.show1, label: 'Perfume'    },
   { src: IMG.show2, label: 'Cosmetics'  },
   { src: IMG.show3, label: 'Makeup'     },
-  { src: IMG.show4, label: 'Watch'      },
-  { src: IMG.show5, label: 'Sunglasses' },
-  { src: IMG.show6, label: 'Sneakers'   },
-  { src: IMG.show7, label: 'Handbag'    },
+  { src: IMG.show4, label: 'Skincare'   },
+  { src: IMG.show5, label: 'Lipstick'   },
+  { src: IMG.show6, label: 'Candles'    },
+  { src: IMG.show7, label: 'Haircare'   },
 ];
 
 export default function ShowcaseSection() {
@@ -27,7 +27,7 @@ export default function ShowcaseSection() {
           fontSize: mob ? 'clamp(24px,7vw,36px)' : 'clamp(28px,3.5vw,46px)',
           fontWeight: 800, letterSpacing: '-1px', color: t.text,
         }}>
-          Real products, <span className="gt">AI-powered results</span>
+          Real consumable products, <span className="gt">AI-powered results</span>
         </h2>
       </div>
       <div style={{

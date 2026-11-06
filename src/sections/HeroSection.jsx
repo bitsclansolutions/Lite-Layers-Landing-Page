@@ -42,7 +42,7 @@ export default function HeroSection() {
               width: 8, height: 8, borderRadius: '50%', background: '#E91E8C',
               animation: 'pulse 2s infinite', display: 'inline-block',
             }} />
-            AI-Powered Product Photography
+            AI Photography for Consumable Products
           </div>
 
           <h1 style={{
@@ -54,8 +54,8 @@ export default function HeroSection() {
           </h1>
 
           <p style={{ fontSize: mob ? 16 : 18, lineHeight: 1.75, color: t.textSub, marginBottom: 36 }}>
-            Pick your product, choose from 200+ professional scene templates, and let AI
-            composite a perfect shot in seconds — built for ecommerce sellers.
+            Snap your perfumes, skincare, cosmetics or haircare, choose from 200+ professional scene
+            templates, and let AI composite a perfect shot in seconds — built for consumable brands and ecommerce sellers.
           </p>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>

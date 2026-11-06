@@ -36,13 +36,13 @@ export const IMG = {
   scene8: '/scenes/forest-podium.jpg',
 
   // Showcase strip
-  show1: PX(974964,  380, 460),
-  show2: PX(3059750, 380, 460),
+  show1: PX(37127787, 380, 460),
+  show2: PX(12969358, 380, 460),
   show3: PX(2113855, 380, 460),
-  show4: PX(190819,  380, 460),
-  show5: PS('sunglasses-product', 380, 460),
-  show6: PS('sneaker-shoe-white', 380, 460),
-  show7: PS('leather-handbag',    380, 460),
+  show4: PX(6800936, 380, 460),
+  show5: PX(4416763, 380, 460),
+  show6: PX(9518738, 380, 460),
+  show7: PX(8167172, 380, 460),
 
   // Smart resize demo
   resizeDemo: PX(2113855, 900, 660),

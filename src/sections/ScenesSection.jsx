@@ -125,7 +125,7 @@ export default function ScenesSection() {
               200+ Professional <span className="gt">Scene Templates</span>
             </h2>
             <p style={{ fontSize: mob ? 15 : 18, color: t.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.75 }}>
-              Every industry, every mood. Find the perfect backdrop for any product.
+              Every industry, every mood. Find the perfect backdrop for any consumable product.
             </p>
           </div>
 

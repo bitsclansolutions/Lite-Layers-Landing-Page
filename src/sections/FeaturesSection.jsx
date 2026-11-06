@@ -55,7 +55,7 @@ export default function FeaturesSection() {
             fontSize: mob ? 'clamp(26px,7vw,38px)' : 'clamp(30px,4vw,50px)',
             fontWeight: 800, letterSpacing: '-1px', color: t.text,
           }}>
-            Everything for <span className="gt">perfect product photos</span>
+            Everything for <span className="gt">perfect consumable product photos</span>
           </h2>
         </div>
 
