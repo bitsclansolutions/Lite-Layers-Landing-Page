@@ -49,7 +49,7 @@ export default function HeroSection() {
             fontSize: mob ? 'clamp(32px,9vw,48px)' : 'clamp(38px,5vw,66px)',
             fontWeight: 900, lineHeight: 1.08, letterSpacing: '-2px', marginBottom: 20, color: t.text,
           }}>
-            Turn Any Product Into{' '}
+            Turn Any Consumable Product Into{' '}
             <span className="gt">Studio-Quality</span>{' '}Photos
           </h1>
 
