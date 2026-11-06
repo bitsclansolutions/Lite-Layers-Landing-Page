@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, MailCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../context/ThemeContext';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -16,7 +16,7 @@ const INPUT = (t) => ({
 export default function LoginPage() {
   const { t } = useT();
   const mob = useIsMobile();
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle, user, userData } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, resetPassword, user, userData } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -26,6 +26,8 @@ export default function LoginPage() {
   const [name, setName]               = useState('');
   const [error, setError]             = useState('');
   const [busy, setBusy]               = useState(false);
+  const [showPass, setShowPass]       = useState(false);
+  const [resetSent, setResetSent]     = useState(false);
   const [awaitingRedirect, setAwaitingRedirect] = useState(false);
 
   // Once we've signed in and userData has loaded from Firestore, redirect based on role.
@@ -41,6 +43,18 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setBusy(true);
+    if (tab === 'reset') {
+      try {
+        await resetPassword(email.trim());
+        setResetSent(true);
+      } catch (err) {
+        // Don't reveal whether an account exists for this email.
+        if (err.code === 'auth/user-not-found') setResetSent(true);
+        else setError(friendlyError(err.code));
+      }
+      setBusy(false);
+      return;
+    }
     try {
       if (tab === 'login') {
         await signInWithEmail(email, pass);
@@ -52,6 +66,13 @@ export default function LoginPage() {
       setError(friendlyError(err.code));
       setBusy(false);
     }
+  };
+
+  const switchTab = (next) => {
+    setTab(next);
+    setError('');
+    setResetSent(false);
+    setShowPass(false);
   };
 
   const handleGoogle = async () => {
@@ -113,12 +134,20 @@ export default function LoginPage() {
         </Link>
 
         {/* Tabs */}
+        {tab === 'reset' ? (
+          <div style={{ marginBottom: 24 }}>
+            <h1 style={{ fontSize: 20, fontWeight: 800, color: t.text, margin: '0 0 8px' }}>Reset your password</h1>
+            <p style={{ fontSize: 13, color: t.textMuted, margin: 0, lineHeight: 1.6 }}>
+              Enter the email you signed up with and we'll send you a link to set a new password.
+            </p>
+          </div>
+        ) : (
         <div style={{
           display: 'flex', background: t.bgBar, borderRadius: 12,
           padding: 4, marginBottom: 28, gap: 4,
         }}>
           {['login', 'signup'].map((tab_) => (
-            <button key={tab_} onClick={() => { setTab(tab_); setError(''); }}
+            <button key={tab_} onClick={() => switchTab(tab_)}
               style={{
                 flex: 1, padding: '9px 0', borderRadius: 9, border: 'none',
                 cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all .2s',
@@ -130,8 +159,24 @@ export default function LoginPage() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Form */}
+        {tab === 'reset' && resetSent ? (
+          <div style={{ textAlign: 'center' }}>
+            <MailCheck size={40} color="#E91E8C" strokeWidth={1.75} style={{ marginBottom: 12 }} />
+            <p style={{ fontSize: 14, color: t.text, lineHeight: 1.6, margin: '0 0 6px' }}>
+              If an account exists for <strong>{email.trim()}</strong>, a reset link is on its way.
+            </p>
+            <p style={{ fontSize: 12, color: t.textMuted, lineHeight: 1.6, margin: '0 0 20px' }}>
+              Check your inbox and spam folder. The link expires after a while, so use it soon.
+            </p>
+            <button type="button" onClick={() => switchTab('login')} className="llb gb"
+              style={{ padding: '13px 0', borderRadius: 12, fontSize: 14, fontWeight: 700, width: '100%', justifyContent: 'center' }}>
+              Back to Log In
+            </button>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {tab === 'signup' && (
             <input
@@ -145,11 +190,37 @@ export default function LoginPage() {
             value={email} onChange={e => setEmail(e.target.value)}
             style={INPUT(t)}
           />
-          <input
-            type="password" placeholder="Password" required minLength={6}
-            value={pass} onChange={e => setPass(e.target.value)}
-            style={INPUT(t)}
-          />
+          {tab !== 'reset' && (
+            <div style={{ position: 'relative' }}>
+              <input
+                className="ll-pass"
+                type={showPass ? 'text' : 'password'} placeholder="Password" required minLength={6}
+                autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+                value={pass} onChange={e => setPass(e.target.value)}
+                style={{ ...INPUT(t), paddingRight: 46 }}
+              />
+              <button type="button" className="ll-eye" onClick={() => setShowPass(v => !v)}
+                aria-label={showPass ? 'Hide password' : 'Show password'}
+                title={showPass ? 'Hide password' : 'Show password'}
+                style={{
+                  position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  padding: 8, display: 'flex', alignItems: 'center', color: t.textMuted,
+                }}>
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          )}
+
+          {tab === 'login' && (
+            <button type="button" onClick={() => switchTab('reset')}
+              style={{
+                alignSelf: 'flex-end', marginTop: -4, background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#E91E8C', fontFamily: "'Inter',sans-serif",
+              }}>
+              Forgot password?
+            </button>
+          )}
 
           {error && (
             <div style={{
@@ -164,10 +235,23 @@ export default function LoginPage() {
               padding: '13px 0', borderRadius: 12, fontSize: 14, fontWeight: 700,
               width: '100%', marginTop: 4, opacity: busy ? 0.7 : 1, justifyContent: 'center',
             }}>
-            {busy ? 'Please wait…' : tab === 'login' ? 'Log In' : 'Create Account'}
+            {busy ? 'Please wait…' : tab === 'login' ? 'Log In' : tab === 'signup' ? 'Create Account' : 'Send Reset Link'}
           </button>
-        </form>
 
+          {tab === 'reset' && (
+            <button type="button" onClick={() => switchTab('login')}
+              style={{
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                fontSize: 13, fontWeight: 600, color: t.textMuted, fontFamily: "'Inter',sans-serif",
+                display: 'inline-flex', alignItems: 'center', gap: 6, justifyContent: 'center',
+              }}>
+              <ArrowLeft size={14} /> Back to Log In
+            </button>
+          )}
+        </form>
+        )}
+
+        {tab !== 'reset' && (<>
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
           <div style={{ flex: 1, height: 1, background: t.border }} />
@@ -187,6 +271,7 @@ export default function LoginPage() {
           <GoogleIcon />
           Continue with Google
         </button>
+        </>)}
 
         <p style={{ textAlign: 'center', fontSize: 12, color: t.textMuted, marginTop: 24 }}>
           By continuing you agree to our{' '}
@@ -221,6 +306,8 @@ function friendlyError(code) {
     'auth/invalid-credential':   'Incorrect email or password.',
     'auth/unauthorized-domain':  'This domain is not authorised in Firebase. Add it under Authentication → Settings → Authorized domains.',
     'auth/operation-not-allowed': 'Google sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.',
+    'auth/too-many-requests':    'Too many attempts. Please wait a few minutes and try again.',
+    'auth/missing-email':        'Please enter your email address.',
     'auth/popup-blocked':        'Popup was blocked by your browser. Please allow popups for this site.',
   };
   return map[code] || `Something went wrong (${code}). Please try again.`;

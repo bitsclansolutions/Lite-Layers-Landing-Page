@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Download, LayoutDashboard, LogIn, Menu, X } from 'lucide-react';
+import { PLAY_STORE_URL } from '../constants/links';
 import { useT } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -10,8 +11,7 @@ import ThemeToggle from './ThemeToggle';
 const NAV_LINKS = [
   ['Features',    '#features'   ],
   ['Scenes',      '#scenes'     ],
-  ['Coming Soon', '#coming-soon'],
-  // ['Pricing',     '#pricing'    ],
+  ['Pricing',     '#pricing'    ],
   ['Contact',     '#contact'    ],
 ];
 
@@ -128,7 +128,7 @@ export default function Navbar() {
             )
           )}
 
-          <a href="#download" className="llb gb"
+          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="llb gb"
             style={{ padding: mob ? '9px 16px' : '11px 26px', fontSize: mob ? 13 : 14, borderRadius: 30, fontWeight: 700, whiteSpace: 'nowrap', gap: 6 }}>
             <Download size={13} strokeWidth={2.5} />
             {mob ? 'Download' : 'Download Free'}

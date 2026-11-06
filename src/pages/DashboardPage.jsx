@@ -66,7 +66,7 @@ function effectivePlanState(userData) {
 const NAV = [
   { id: 'overview',  label: 'Overview',    icon: LayoutDashboard },
   { id: 'usage',     label: 'Usage',       icon: BarChart2       },
-  // { id: 'billing',   label: 'Billing',     icon: CreditCard      },
+  { id: 'billing',   label: 'Billing',     icon: CreditCard      },
   { id: 'settings',  label: 'Settings',    icon: Settings        },
 ];
 
@@ -262,8 +262,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
 
       {usageError && <UsageError t={t} error={usageError} onRefresh={onRefresh} />}
 
-      {/*
-      Plan banner — hidden alongside Billing tab for now.
+      {/* Plan banner */}
       <div style={{
         background: t.bgCard, border: `1.5px solid ${meta.color}44`,
         borderRadius: 16, padding: '24px',
@@ -301,7 +300,7 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
           </button>
         </div>
 
-        Cancellation scheduled notice
+        {/* Cancellation scheduled notice */}
         {cancelAtPeriodEnd && periodEnd && (
           <div style={{
             marginTop: 16, padding: '10px 14px', borderRadius: 10,
@@ -312,18 +311,17 @@ function Overview({ t, user, userData, usage, monthlyData, loadingUsage, usageEr
           </div>
         )}
 
-        Past due notice
+        {/* Past due notice */}
         {status === 'past_due' && (
           <div style={{
             marginTop: 16, padding: '10px 14px', borderRadius: 10,
             background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.25)',
             fontSize: 13, color: '#f87171',
           }}>
-            Your last payment failed. Please contact support to fix your payment method.
+            Your last payment failed. Go to <strong style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => onNavigate('billing')}>Billing</strong> to fix your payment method.
           </div>
         )}
       </div>
-      */}
 
       {/* Quick usage grid */}
       <div className="c4" style={{
@@ -1338,7 +1336,7 @@ function DashboardHeader({ t, active, isDark, toggle, isMobile, menuOpen, onMenu
 }
 
 /* ─── main ───────────────────────────────────────────────── */
-const VALID_TABS = ['overview', 'usage', /* 'billing', */ 'settings'];
+const VALID_TABS = ['overview', 'usage', 'billing', 'settings'];
 
 export default function DashboardPage() {
   const { t, isDark, toggle } = useT();
@@ -1494,11 +1492,11 @@ export default function DashboardPage() {
               <UsageView {...viewProps} />
             </div>
           )}
-          {/* {visited.current.has('billing') && (
+          {visited.current.has('billing') && (
             <div style={{ display: active === 'billing' ? 'block' : 'none' }}>
               <BillingView {...viewProps} />
             </div>
-          )} */}
+          )}
           {visited.current.has('settings') && (
             <div style={{ display: active === 'settings' ? 'block' : 'none' }}>
               <SettingsView {...viewProps} />

@@ -13,6 +13,8 @@ export function useGlobalStyles() {
     s.textContent = `
       *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
       html { scroll-behavior:smooth; }
+      /* Browser autofill paints the field white: keep the password eye icon visible on it */
+      .ll-pass:-webkit-autofill + .ll-eye, .ll-pass:autofill + .ll-eye { color:#000!important; }
       body { overflow-x:hidden; }
       #root { width:100%!important; max-width:100%!important; margin:0!important; border:none!important; min-height:100vh; display:block!important; }
 

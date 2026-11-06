@@ -6,6 +6,7 @@ import {
   signOut as fbSignOut,
   onAuthStateChanged,
   updateProfile,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, setDoc, onSnapshot, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 import { auth, db, googleProvider } from '../firebase';
@@ -96,6 +97,7 @@ export function AuthProvider({ children }) {
       },
       signInWithGoogle: ()     => signInWithPopup(auth, googleProvider),
       signOut:          ()     => fbSignOut(auth),
+      resetPassword:    (e)    => sendPasswordResetEmail(auth, e),
     }}>
       {!loading && children}
     </AuthCtx.Provider>

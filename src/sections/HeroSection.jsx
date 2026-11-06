@@ -1,4 +1,5 @@
 import { Sparkles, ArrowRight, Play, CheckCircle2 } from 'lucide-react';
+import { PLAY_STORE_URL } from '../constants/links';
 import { useT } from '../context/ThemeContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { IMG } from '../constants/images';
@@ -58,7 +59,7 @@ export default function HeroSection() {
           </p>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 36 }}>
-            <a href="#download" className="llb gb" style={{
+            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="llb gb" style={{
               padding: mob ? '13px 24px' : '15px 30px', fontSize: mob ? 15 : 16,
               borderRadius: 16, fontWeight: 700, boxShadow: '0 20px 50px rgba(233,30,140,.35)', gap: 8,
             }}>

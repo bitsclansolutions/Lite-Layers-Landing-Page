@@ -44,10 +44,6 @@ export const IMG = {
   show6: PS('sneaker-shoe-white', 380, 460),
   show7: PS('leather-handbag',    380, 460),
 
-  // Upcoming features
-  batchImg:   PS('product-catalog-grid',   900, 320),
-  tryonImg:   PS('fashion-shopping-woman', 900, 320),
-
   // Smart resize demo
   resizeDemo: PX(2113855, 900, 660),
 

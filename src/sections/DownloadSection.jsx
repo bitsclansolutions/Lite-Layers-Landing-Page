@@ -1,4 +1,5 @@
 import { Play, Check } from 'lucide-react';
+import { PLAY_STORE_URL } from '../constants/links';
 import { useT } from '../context/ThemeContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import Logo from '../components/Logo';
@@ -37,7 +38,7 @@ export default function DownloadSection() {
           <p style={{ fontSize: mob ? 16 : 20, color: t.textSub, marginBottom: 40, lineHeight: 1.75 }}>
             Download Lite Layers and transform your first product photo in under 60 seconds.
           </p>
-          <a href="#" className="llb gb" style={{
+          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="llb gb" style={{
             padding: mob ? '15px 32px' : '18px 44px', fontSize: mob ? 16 : 18,
             borderRadius: 20, boxShadow: '0 28px 70px rgba(233,30,140,.45)', margin: '0 auto', fontWeight: 700, gap: 10,
           }}>
