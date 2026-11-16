@@ -17,23 +17,71 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // ── user document field policy ─────────────────────────────
+    // Plan, billing and role fields are written only by the server (Stripe
+    // webhook, expiry cron, admin APIs) through the Admin SDK, which bypasses
+    // these rules. Clients may only touch the profile fields below, so no one
+    // can give themselves a paid plan, admin, or a reset usage period.
+
+    // Profile fields a signed-in user may change on their own document.
+    function editableUserFields() {
+      return ['displayName', 'photoURL'];
+    }
+
+    // Every field a client may include when creating its own user document
+    // (what the website's AuthContext and the app write on sign-up).
+    function creatableUserFields() {
+      return ['email', 'displayName', 'photoURL', 'plan', 'role',
+              'stripeCustomerId', 'stripeSubscriptionId', 'subscriptionStatus',
+              'currentPeriodEnd', 'cancelAtPeriodEnd', 'usagePeriodStart',
+              'createdAt'];
+    }
+
+    // A new user doc: only known fields, the caller's real email, free plan,
+    // no role and no subscription data.
+    function isFreshUserDoc(data) {
+      return data.keys().hasOnly(creatableUserFields())
+          && data.get('email', request.auth.token.get('email', null))
+               == request.auth.token.get('email', null)
+          && data.get('role', null) == null
+          && data.get('plan', 'free') == 'free'
+          && data.get('subscriptionStatus', null) == null
+          && data.get('stripeCustomerId', null) == null
+          && data.get('stripeSubscriptionId', null) == null
+          && data.get('currentPeriodEnd', null) == null
+          && data.get('cancelAtPeriodEnd', false) == false
+          && data.get('usagePeriodStart', null) == null;
+    }
+
     // ── user documents ──────────────────────────────────────────
     match /users/{userId} {
       // Only the account owner can read their own document
       allow read: if isOwner(userId);
 
-      // New registration: client may create own doc but cannot self-assign role
+      // New registration: owner may create their own doc, free plan only
       allow create: if isOwner(userId)
-                    && request.resource.data.role == null;
+                    && isFreshUserDoc(request.resource.data);
 
-      // Profile updates (e.g. photoURL): owner only, role field must not change
+      // Profile updates: owner only, and only the profile fields may change
       allow update: if isOwner(userId)
-                    && request.resource.data.role == resource.data.role;
+                    && request.resource.data.diff(resource.data)
+                         .affectedKeys().hasOnly(editableUserFields());
 
       // Deletion is handled server-side via Firebase Admin SDK
       allow delete: if false;
 
-      // Usage sub-collection: owner reads, server-only writes (track-usage API)
+      // Cloud backup of the user's projects (app: FirestoreSyncService)
+      match /projects/{projectId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Cross-device app settings (app: SettingsService)
+      match /settings/{settingsId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Usage counters: owner reads; only the server writes (the track-usage
+      // API counts and checks limits), so users can't lower or reset counts.
       match /usage/{periodKey} {
         allow read:  if isOwner(userId);
         allow write: if false;
