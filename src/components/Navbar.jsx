@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Download, LayoutDashboard, LogIn, Menu, X } from 'lucide-react';
 import { PLAY_STORE_URL } from '../constants/links';
 import { useT } from '../context/ThemeContext';
@@ -11,6 +11,7 @@ import ThemeToggle from './ThemeToggle';
 const NAV_LINKS = [
   ['Features',    '#features'   ],
   ['Scenes',      '#scenes'     ],
+  ['Free Tools',  '/free-tools' ],
   ['Pricing',     '#pricing'    ],
   ['Contact',     '#contact'    ],
 ];
@@ -19,7 +20,10 @@ export default function Navbar() {
   const { t }               = useT();
   const { user, userData }  = useAuth();
   const navigate            = useNavigate();
+  const { pathname }        = useLocation();
   const mob                 = useIsMobile();
+  // Section anchors (#features...) live on the home page; point them there from other pages.
+  const anchor = href => (pathname === '/' ? href : `/${href}`);
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
 
@@ -77,7 +81,7 @@ export default function Navbar() {
                     {label}
                   </Link>
                 ) : (
-                  <a key={label} href={href} style={linkStyle}
+                  <a key={label} href={anchor(href)} style={linkStyle}
                     onMouseEnter={e => { e.currentTarget.style.color = '#E91E8C'; e.currentTarget.style.background = t.pillBg; }}
                     onMouseLeave={e => { e.currentTarget.style.color = t.textMuted; e.currentTarget.style.background = 'transparent'; }}>
                     {label}
@@ -161,7 +165,7 @@ export default function Navbar() {
             return isRoute ? (
               <Link key={label} to={href} style={mobileLinkStyle} onClick={() => setMenuOpen(false)}>{label}</Link>
             ) : (
-              <a key={label} href={href} style={mobileLinkStyle} onClick={() => setMenuOpen(false)}>{label}</a>
+              <a key={label} href={anchor(href)} style={mobileLinkStyle} onClick={() => setMenuOpen(false)}>{label}</a>
             );
           })}
           <div style={{ paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>

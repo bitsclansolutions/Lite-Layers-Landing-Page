@@ -13,7 +13,8 @@ import { auth, db, googleProvider } from '../firebase';
 
 const AuthCtx = createContext(null);
 
-export function AuthProvider({ children }) {
+// renderWhileLoading: show children before Firebase reports the signed-in user (public pages).
+export function AuthProvider({ children, renderWhileLoading = false }) {
   const [user, setUser]         = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading]   = useState(true);
@@ -99,7 +100,7 @@ export function AuthProvider({ children }) {
       signOut:          ()     => fbSignOut(auth),
       resetPassword:    (e)    => sendPasswordResetEmail(auth, e),
     }}>
-      {!loading && children}
+      {(!loading || renderWhileLoading) && children}
     </AuthCtx.Provider>
   );
 }

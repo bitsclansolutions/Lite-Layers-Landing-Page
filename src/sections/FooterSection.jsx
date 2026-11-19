@@ -6,7 +6,14 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import Logo from '../components/Logo';
 
 const ROUTE_LINKS = {
-  'Pricing':          '#pricing',
+  'AI Scene Adding':      '/ai-product-background-generator',
+  'Background Removal':   '/remove-background-product-photo',
+  'Smart Resize':         '/guides/product-image-size-guide',
+  'All Free Tools':       '/free-tools',
+  'Amazon Product Photos': '/amazon-product-photos',
+  'White Backgrounds':    '/white-background-product-photos',
+  'Image Size Guide':     '/guides/product-image-size-guide',
+  'Pricing':          '/#pricing',
   'Privacy Policy':   '/privacy-policy',
   'Terms of Service': '/terms',
   'Delete Account':   '/account-deletion',
@@ -15,6 +22,7 @@ const ROUTE_LINKS = {
 
 const LINK_GROUPS = [
   { title: 'Features', links: ['AI Scene Adding', 'Background Removal', 'Smart Resize'] },
+  { title: 'Free Tools', links: ['All Free Tools', 'Amazon Product Photos', 'White Backgrounds', 'Image Size Guide'] },
   { title: 'Company',  links: ['Download App', 'About', 'Blog', 'Pricing', 'Press Kit'] },
   { title: 'Support',  links: ['Help Center', 'Contact Us', 'Privacy Policy', 'Terms of Service', 'Delete Account'] },
 ];
@@ -46,7 +54,7 @@ export default function FooterSection() {
         {/* Top: brand + links */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: mob ? '1fr 1fr' : '2fr 1fr 1fr 1fr',
+          gridTemplateColumns: mob ? '1fr 1fr' : '2fr 1fr 1fr 1fr 1fr',
           gap: mob ? 28 : 40,
           marginBottom: mob ? 32 : 48,
         }} className={mob ? '' : 'c4'}>
@@ -79,7 +87,7 @@ export default function FooterSection() {
                         onMouseLeave={e => e.currentTarget.style.color = t.textMuted}>
                         {label}
                       </a>
-                    ) : to && !to.startsWith('#') ? (
+                    ) : to && !to.includes('#') ? (
                       <Link to={to} style={sharedStyle}
                         onMouseEnter={e => e.currentTarget.style.color = '#E91E8C'}
                         onMouseLeave={e => e.currentTarget.style.color = t.textMuted}>

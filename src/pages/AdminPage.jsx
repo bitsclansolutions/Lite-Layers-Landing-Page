@@ -18,6 +18,7 @@ import { updateProfile } from 'firebase/auth';
 import { useT } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { db, auth } from '../firebase';
+import Select from '../components/Select';
 
 /* ─── constants ──────────────────────────────────────────────── */
 const ADMIN_NAV = [
@@ -485,19 +486,19 @@ function AdminUsers({ t }) {
             }}
           />
         </div>
-        <select
+        <Select
           value={planFilter}
-          onChange={e => setPlanFilter(e.target.value)}
-          style={{
-            padding: '9px 14px', borderRadius: 10, border: `1px solid ${t.border}`,
-            background: t.bgCard, color: t.text, fontSize: 13,
-            fontFamily: "'Inter',sans-serif", cursor: 'pointer', outline: 'none',
-          }}>
-          <option value="all">All Plans</option>
-          <option value="free">Free</option>
-          <option value="pro">Pro</option>
-          <option value="business">Business</option>
-        </select>
+          onChange={setPlanFilter}
+          size="sm"
+          ariaLabel="Filter by plan"
+          style={{ minWidth: 150 }}
+          options={[
+            { value: 'all', label: 'All Plans' },
+            { value: 'free', label: 'Free' },
+            { value: 'pro', label: 'Pro' },
+            { value: 'business', label: 'Business' },
+          ]}
+        />
       </div>
 
       {error && (
@@ -953,25 +954,21 @@ function AdminScenes({ t, user, onTabChange }) {
                 color: t.text, fontSize: 14, fontFamily: "'Inter',sans-serif",
                 outline: 'none', marginBottom: 12, boxSizing: 'border-box',
               }} />
-            <select value={uploadCatId} onChange={e => setUploadCatId(e.target.value)}
-              style={{
-                width: '100%', padding: '11px 14px', borderRadius: 10,
-                border: `1px solid ${t.border}`, background: t.bgCard,
-                color: t.text, fontSize: 14, fontFamily: "'Inter',sans-serif",
-                outline: 'none', marginBottom: 20, boxSizing: 'border-box', cursor: 'pointer',
-              }}>
-              <option value="">— Select category —</option>
-              {parents.filter(p => isLeaf(p)).map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-              {parents.filter(p => !isLeaf(p)).map(parent => (
-                <optgroup key={parent.id} label={parent.name}>
-                  {childrenOf(parent.id).map(child => (
-                    <option key={child.id} value={child.id}>{child.name}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+            <Select
+              value={uploadCatId}
+              onChange={setUploadCatId}
+              placeholder="— Select category —"
+              ariaLabel="Scene category"
+              style={{ width: '100%', marginBottom: 20 }}
+              options={[
+                { value: '', label: '— Select category —' },
+                ...parents.filter(p => isLeaf(p)).map(cat => ({ value: cat.id, label: cat.name })),
+                ...parents.filter(p => !isLeaf(p)).map(parent => ({
+                  label: parent.name,
+                  options: childrenOf(parent.id).map(child => ({ value: child.id, label: child.name })),
+                })),
+              ]}
+            />
             {uploadError && (
               <div style={{
                 marginBottom: 16, padding: '10px 14px', borderRadius: 10,

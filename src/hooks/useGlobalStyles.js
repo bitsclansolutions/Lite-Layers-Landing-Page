@@ -1,16 +1,8 @@
 import { useEffect } from 'react';
 
-export function useGlobalStyles() {
-  useEffect(() => {
-    if (document.getElementById('ll-gs')) return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap';
-    document.head.appendChild(link);
-
-    const s = document.createElement('style');
-    s.id = 'll-gs';
-    s.textContent = `
+// Global CSS. Also inlined into prerendered HTML (scripts/prerender.mjs) as <style id="ll-gs">,
+// in which case the hook below sees it and does nothing.
+export const GLOBAL_CSS = `
       *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
       html { scroll-behavior:smooth; }
       /* Browser autofill paints the field white: keep the password eye icon visible on it */
@@ -36,6 +28,20 @@ export function useGlobalStyles() {
 
       *{transition:background-color .28s ease,border-color .28s ease,color .28s ease,box-shadow .28s ease;}
       img,svg{transition:none!important;}
+
+      /* /free-tools search box: hide the browser's own clear button (we draw one) */
+      .ll-tools-search::-webkit-search-cancel-button { -webkit-appearance:none; appearance:none; display:none; }
+      .ll-tools-search:focus { border-color:#E91E8C!important; box-shadow:0 0 0 4px rgba(233,30,140,.14)!important; }
+      [role="tablist"].ll-hscroll::-webkit-scrollbar { display:none; }
+
+      /* Custom dropdown (components/Select.jsx) */
+      @keyframes llSelectIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+      .ll-select:focus-visible { outline:2px solid #E91E8C; outline-offset:2px; }
+
+      /* Custom FAQ accordion (components/seo/SeoBlocks.jsx) */
+      .ll-faq-btn:focus-visible { outline:2px solid #E91E8C; outline-offset:2px; }
+      .ll-faq-btn:hover span:last-child { transform:scale(1.06); }
+      .ll-faq-btn span:last-child { transition:transform .2s ease, background-color .28s ease, border-color .28s ease, color .28s ease; }
 
       ::-webkit-scrollbar{width:5px;}
       ::-webkit-scrollbar-thumb{background:linear-gradient(#E91E8C,#7B2FBE);border-radius:4px;}
@@ -76,7 +82,19 @@ export function useGlobalStyles() {
       @media(max-width:960px){
         .up-grid{grid-template-columns:1fr!important;}
       }
-    `;
+`;
+
+export function useGlobalStyles() {
+  useEffect(() => {
+    if (document.getElementById('ll-gs')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap';
+    document.head.appendChild(link);
+
+    const s = document.createElement('style');
+    s.id = 'll-gs';
+    s.textContent = GLOBAL_CSS;
     document.head.appendChild(s);
   }, []);
 }

@@ -29,7 +29,8 @@
       "Bash(git config *)",
       "Bash(grep -r \"reset\\\\|scheduled\\\\|cron\\\\|Cloud.*Function\\\\|firebase.*function\" \"C:/Users/azhar/OneDrive/Desktop/General/Lite Layers Landing\" --include=\"*.js\" --include=\"*.ts\" --include=\"*.json\" ! -path \"*/node_modules/*\" ! -path \"*/dist/*\")",
       "Bash(grep *)",
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "Bash(npx vite *)"
     ]
   }
 }
