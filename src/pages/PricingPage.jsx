@@ -77,15 +77,17 @@ export default function PricingPage() {
     setError('');
     setLoading(plan.id);
     try {
+      const token = await user.getIdToken();
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: plan.id, userId: user.uid, userEmail: user.email }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ plan: plan.id }),
       });
-      if (!res.ok) throw new Error('Server error');
-      const { url } = await res.json();
-      window.location.href = url;
-    } catch {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) throw new Error(data.error || 'Server error');
+      window.location.href = data.url;
+    } catch (err) {
+      console.error('Checkout error:', err);
       setError('Unable to start checkout. Please try again.');
       setLoading(null);
     }
