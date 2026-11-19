@@ -88,7 +88,9 @@ export default function PricingPage() {
       window.location.href = data.url;
     } catch (err) {
       console.error('Checkout error:', err);
-      setError('Unable to start checkout. Please try again.');
+      setError(err?.message && err.message !== 'Server error'
+        ? `Unable to start checkout: ${err.message}`
+        : 'Unable to start checkout. Please try again.');
       setLoading(null);
     }
   };
