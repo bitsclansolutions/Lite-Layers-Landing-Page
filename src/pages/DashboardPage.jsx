@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useBfcacheRestore } from '../hooks/useBfcacheRestore';
 import {
   LayoutDashboard, BarChart2, CreditCard, Settings,
   LogOut, Crown, Zap, RefreshCw, Download, ChevronRight,
@@ -463,6 +464,10 @@ function BillingView({ t, userData, user }) {
   const [portalBusy, setPortalBusy] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState('');
+
+  // Back button from Stripe Checkout / billing portal restores this page
+  // mid-"loading".
+  useBfcacheRestore(() => { setLoadingPlan(null); setPortalBusy(false); });
 
   const { plan, status, cancelAtPeriodEnd, periodEnd } = effectivePlanState(userData);
   const meta              = PLAN_META[plan];

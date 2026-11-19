@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import { useT } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useBfcacheRestore } from '../hooks/useBfcacheRestore';
 import Navbar from '../components/Navbar';
 
 const PLANS = [
@@ -65,6 +66,9 @@ export default function PricingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(null);
   const [error, setError]     = useState('');
+
+  // Back button from Stripe Checkout restores this page mid-"loading".
+  useBfcacheRestore(() => setLoading(null));
 
   const currentPlan = userData?.plan || 'free';
 
